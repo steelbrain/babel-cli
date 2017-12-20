@@ -2,7 +2,7 @@
   "extends": [
     "steelbrain",
     "prettier",
-    "prettier/flowtype",
+    "prettier/flowtype"
   ],
-  "plugins": ["prettier"],
+  "plugins": ["prettier"]
 }

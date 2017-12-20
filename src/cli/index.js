@@ -4,6 +4,7 @@
 import program from 'commander'
 
 import doTheMagic from '../'
+import CLIError from '../CLIError'
 import manifest from '../../package.json'
 
 function get(obj, key, defaultValue): any {
@@ -46,4 +47,11 @@ doTheMagic({
   keepExtraFiles: get(program, 'keepExtraFiles', false),
   sourceDirectory: program.args[0],
   outputDirectory: program.outputDirectory,
-}).catch(error => console.error(error))
+}).catch(error => {
+  if (error instanceof CLIError) {
+    console.error(error.message)
+  } else {
+    console.error(error)
+  }
+  process.exit(1)
+})
