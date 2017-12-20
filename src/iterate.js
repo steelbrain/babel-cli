@@ -26,7 +26,7 @@ export default (async function iterate({
   ignored: Array<string>,
   keepExtraFiles: boolean,
   filesToKeep: (sourceItems: Array<string>) => Array<string>,
-  callback: (sourceFile: string, outputFile: string) => Promise<void>,
+  callback: (sourceFile: string, outputFile: string, sourceStats: FS.Stats) => Promise<void>,
 }): Promise<void> {
   const contents = await FS.readdir(sourceDirectory)
 
@@ -73,7 +73,7 @@ export default (async function iterate({
         await mkdirpPromised(outputDirectory)
         outputDirectoryExists = true
       }
-      await callback(filePath, Path.join(outputDirectory, fileName))
+      await callback(filePath, Path.join(outputDirectory, fileName), stat)
     } else if (stat.isDirectory()) {
       await iterate({
         rootDirectory,

@@ -27,6 +27,13 @@ export default (async function doTheMagic(config: Config) {
     }
     return transformFileCached
   }
+  async function processFile(sourceFile, outputFile, stats) {
+    const transformed = await getTransformFile()(sourceFile)
+    await FS.writeFile(outputFile, transformed.code, {
+      mode: stats.mode,
+    })
+    console.log(sourceFile, '->', outputFile)
+  }
 
   await iterate({
     rootDirectory: config.sourceDirectory,
@@ -35,10 +42,8 @@ export default (async function doTheMagic(config: Config) {
     ignored: config.ignored,
     keepExtraFiles: config.keepExtraFiles,
     filesToKeep: input => input.concat(config.writeFlowSources ? input.map(i => `${i}.flow`) : []),
-    async callback(sourceFile, outputFile) {
-      const transformed = await getTransformFile()(sourceFile)
-      await FS.writeFile(outputFile, transformed.code)
-      console.log(sourceFile, '->', outputFile)
+    async callback(sourceFile, outputFile, stats) {
+      processFile(sourceFile, outputFile, stats)
     },
   })
 })
