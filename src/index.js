@@ -4,12 +4,14 @@ import os from 'os'
 import FS from 'sb-fs'
 import Path from 'path'
 import crypto from 'crypto'
+import chokidar from 'chokidar'
 import mkdirp from 'mkdirp'
 import promisify from 'sb-promisify'
 import ConfigFile from 'sb-config-file'
 import resolveFrom from 'resolve-from'
 
 import CLIError from './CLIError'
+import handleError from './handleError'
 import iterate from './iterate'
 import type { Config } from './types'
 
@@ -23,6 +25,7 @@ function getSha1(contents: string): string {
 
 export default (async function doTheMagic(config: Config) {
   let transformFileCached
+  let writingQueue = Promise.resolve()
   function getTransformFile() {
     if (!transformFileCached) {
       let resolved
@@ -56,7 +59,10 @@ export default (async function doTheMagic(config: Config) {
         /* No Op */
       }
     }
-    await configFile.set(getSha1(sourceFile), stats.mtime.getTime())
+    writingQueue = writingQueue.then(() =>
+      configFile.set(getSha1(sourceFile), stats.mtime.getTime()),
+    )
+    await writingQueue
   }
   async function getConfigFile() {
     const configDirectory = Path.join(os.homedir(), '.sb-babel-cli')
@@ -86,5 +92,37 @@ export default (async function doTheMagic(config: Config) {
       }
       await processFile(sourceFile, outputFile, stats, configFile)
     },
+  })
+
+  if (!config.watch) return
+
+  const resolvedSourceDirectory = Path.resolve(config.sourceDirectory)
+  const watcher = chokidar.watch(resolvedSourceDirectory, {
+    ignored: config.ignored,
+    alwaysStat: true,
+    ignoreInitial: true,
+  })
+  watcher.on('add', function(givenFileName, stats) {
+    const fileName = Path.relative(resolvedSourceDirectory, givenFileName)
+    const sourceFile = Path.join(config.sourceDirectory, fileName)
+    const outputFile = Path.join(config.outputDirectory, fileName)
+    mkdirpAsync(Path.dirname(outputFile))
+      .then(() => processFile(sourceFile, outputFile, stats, configFile))
+      .catch(handleError)
+  })
+  watcher.on('change', function(givenFileName, stats) {
+    const fileName = Path.relative(resolvedSourceDirectory, givenFileName)
+    const sourceFile = Path.join(config.sourceDirectory, fileName)
+    const outputFile = Path.join(config.outputDirectory, fileName)
+    mkdirpAsync(Path.dirname(outputFile))
+      .then(() => processFile(sourceFile, outputFile, stats, configFile))
+      .catch(handleError)
+  })
+  watcher.on('unlink', function(givenFileName) {
+    const fileName = Path.relative(resolvedSourceDirectory, givenFileName)
+    const outputFile = Path.join(config.outputDirectory, fileName)
+    FS.unlink(outputFile).catch(function() {
+      /* No Op */
+    })
   })
 })

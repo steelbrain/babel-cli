@@ -23,6 +23,7 @@
   },
   "dependencies": {
     "anymatch": "^1.3.2",
+    "chokidar": "^1.7.0",
     "commander": "^2.12.2",
     "mkdirp": "^0.5.1",
     "p-map-series": "^1.0.0",

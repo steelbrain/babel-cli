@@ -4,7 +4,7 @@
 import program from 'commander'
 
 import doTheMagic from '../'
-import CLIError from '../CLIError'
+import handleError from '../handleError'
 import manifest from '../../package.json'
 
 function get(obj, key, defaultValue): any {
@@ -53,10 +53,6 @@ doTheMagic({
   sourceDirectory: program.args[0],
   outputDirectory: program.outputDirectory,
 }).catch(error => {
-  if (error instanceof CLIError) {
-    console.error('ERROR', error.message)
-  } else {
-    console.error(error)
-  }
+  handleError(error)
   process.exit(1)
 })
