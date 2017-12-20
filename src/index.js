@@ -1,6 +1,7 @@
 // @flow
 
 import FS from 'sb-fs'
+import Path from 'path'
 import promisify from 'sb-promisify'
 import resolveFrom from 'resolve-from'
 
@@ -33,6 +34,16 @@ export default (async function doTheMagic(config: Config) {
       mode: stats.mode,
     })
     console.log(sourceFile, '->', outputFile)
+    if (config.writeFlowSources) {
+      try {
+        const flowOutputFile = `${outputFile}.flow`
+        await FS.unlink(flowOutputFile)
+        await FS.symlink(Path.resolve(sourceFile), flowOutputFile)
+        console.log(sourceFile, '->', flowOutputFile)
+      } catch (error) {
+        /* No Op */
+      }
+    }
   }
 
   await iterate({
