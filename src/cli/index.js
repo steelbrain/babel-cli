@@ -25,6 +25,10 @@ program
       .map(item => item.trim())
       .filter(Boolean),
   )
+  .option(
+    '--write-flow-sources',
+    'Write .flow files that are symlinked to source files. Helps with monorepos in some cases',
+  )
   .option('--disable-cache', 'Force recompile all files ignoring cache')
   .option('--keep-extra-files', 'Do NOT delete extra files in the output directory')
   .option('-o, --output-directory <directory>', 'Output directory to write transpiled files to')
@@ -44,6 +48,7 @@ doTheMagic({
   watch: get(program, 'watch', false),
   ignored: get(program, 'ignored', []),
   disableCache: get(program, 'disableCache', false),
+  writeFlowSources: get(program, 'writeFlowSources', false),
   keepExtraFiles: get(program, 'keepExtraFiles', false),
   sourceDirectory: program.args[0],
   outputDirectory: program.outputDirectory,
