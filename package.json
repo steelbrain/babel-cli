@@ -1,0 +1,33 @@
+{
+  "name": "sb-babel-cli",
+  "main": "lib/index.js",
+  "bin": {
+    "babel-cli": "./lib/cli/index.js",
+    "sb-babel-cli": "./lib/cli/index.js"
+  },
+  "author": "steelbrain",
+  "readme": "./README.md",
+  "version": "0.0.0",
+  "description": "A smarter babel-cli",
+  "repository": "https://github.com/steelbrain/babel-cli",
+  "license": "MIT",
+  "keywords": [
+    "cli",
+    "babel"
+  ],
+  "scripts": {
+    "clean": "rimraf lib",
+    "build": "npm run clean; babel src --out-dir lib",
+    "watch": "npm run build -- -w",
+    "test": "(apm test) && (flow check) && (eslint . )"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-preset-steelbrain": "^5.0.3",
+    "eslint-config-steelbrain": "^4.0.1",
+    "flow-bin": "^0.61.0",
+    "jasmine-fix": "^1.3.1",
+    "rimraf": "^2.6.2"
+  }
+}
