@@ -69,6 +69,7 @@ export default (async function iterate({
       return
     }
     if (stat.isFile()) {
+      if (!fileName.endsWith('.js')) return
       if (!outputDirectoryExists) {
         await mkdirpAsync(outputDirectory)
         outputDirectoryExists = true

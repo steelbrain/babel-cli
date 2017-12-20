@@ -44,6 +44,8 @@ export default (async function doTheMagic(config: Config) {
     return transformFileCached
   }
   async function processFile(sourceFile, outputFile, stats, configFile) {
+    if (!sourceFile.endsWith('.js')) return
+
     const transformed = await getTransformFile()(sourceFile)
     await FS.writeFile(outputFile, transformed.code, {
       mode: stats.mode,
