@@ -21,7 +21,9 @@
     "watch": "npm run build -- -w",
     "test": "(apm test) && (flow check) && (eslint . )"
   },
-  "dependencies": {},
+  "dependencies": {
+    "commander": "^2.12.2"
+  },
   "devDependencies": {
     "babel-cli": "^6.26.0",
     "babel-preset-steelbrain": "^5.0.3",
