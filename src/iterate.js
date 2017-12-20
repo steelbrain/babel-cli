@@ -8,8 +8,8 @@ import promisify from 'sb-promisify'
 import pMapSeries from 'p-map-series'
 import anymatch from 'anymatch'
 
-const rimrafPromised = promisify(rimraf)
-const mkdirpPromised = promisify(mkdirp)
+const rimrafAsync = promisify(rimraf)
+const mkdirpAsync = promisify(mkdirp)
 
 export default (async function iterate({
   rootDirectory,
@@ -38,7 +38,7 @@ export default (async function iterate({
     /* No Op */
   }
   if (outputStats && !outputStats.isDirectory()) {
-    await rimrafPromised(outputDirectory)
+    await rimrafAsync(outputDirectory)
     outputStats = null
   }
   if (outputStats && outputStats.isDirectory()) {
@@ -51,7 +51,7 @@ export default (async function iterate({
     const filesToDelete = outputContents
       .filter(item => !whitelist.includes(item))
       .map(item => Path.resolve(outputDirectory, item))
-    await pMapSeries(filesToDelete, item => rimrafPromised(item))
+    await pMapSeries(filesToDelete, item => rimrafAsync(item))
   }
   await pMapSeries(contents, async function(fileName) {
     const filePath = Path.join(sourceDirectory, fileName)
@@ -70,7 +70,7 @@ export default (async function iterate({
     }
     if (stat.isFile()) {
       if (!outputDirectoryExists) {
-        await mkdirpPromised(outputDirectory)
+        await mkdirpAsync(outputDirectory)
         outputDirectoryExists = true
       }
       await callback(filePath, Path.join(outputDirectory, fileName), stat)
