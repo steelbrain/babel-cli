@@ -26,7 +26,7 @@ export default (async function iterate({
   ignored: Array<string>,
   keepExtraFiles: boolean,
   filesToKeep: (sourceItems: Array<string>) => Array<string>,
-  callback: (filePath: string, outputDirectory: string) => Promise<void>,
+  callback: (sourceFile: string, outputFile: string) => Promise<void>,
 }): Promise<void> {
   const contents = await FS.readdir(sourceDirectory)
 
@@ -54,7 +54,7 @@ export default (async function iterate({
     await pMapSeries(filesToDelete, item => rimrafPromised(item))
   }
   await pMapSeries(contents, async function(fileName) {
-    const filePath = Path.resolve(sourceDirectory, fileName)
+    const filePath = Path.join(sourceDirectory, fileName)
     const stat = await FS.lstat(filePath)
     if (stat.isSymbolicLink()) {
       // NOTE: We ignore symlinks
@@ -73,7 +73,7 @@ export default (async function iterate({
         await mkdirpPromised(outputDirectory)
         outputDirectoryExists = true
       }
-      await callback(filePath, outputDirectory)
+      await callback(filePath, Path.join(outputDirectory, fileName))
     } else if (stat.isDirectory()) {
       await iterate({
         rootDirectory,

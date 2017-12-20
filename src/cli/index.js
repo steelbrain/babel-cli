@@ -54,7 +54,7 @@ doTheMagic({
   outputDirectory: program.outputDirectory,
 }).catch(error => {
   if (error instanceof CLIError) {
-    console.error(error.message)
+    console.error('ERROR', error.message)
   } else {
     console.error(error)
   }
