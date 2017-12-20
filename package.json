@@ -2,7 +2,6 @@
   "name": "sb-babel-cli",
   "main": "lib/index.js",
   "bin": {
-    "babel-cli": "./lib/cli/index.js",
     "sb-babel-cli": "./lib/cli/index.js"
   },
   "author": "steelbrain",
