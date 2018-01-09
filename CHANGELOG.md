@@ -1,3 +1,7 @@
+### 0.0.4
+
+- Upgrade to latest `sb-config-file`
+
 ### 0.0.3
 
 - Don't offer `babel-cli` from self

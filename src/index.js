@@ -7,7 +7,7 @@ import crypto from 'crypto'
 import chokidar from 'chokidar'
 import mkdirp from 'mkdirp'
 import promisify from 'sb-promisify'
-import ConfigFile from 'sb-config-file'
+import getConfigFile from 'sb-config-file'
 import resolveFrom from 'resolve-from'
 
 import CLIError from './CLIError'
@@ -66,17 +66,17 @@ export default (async function doTheMagic(config: Config) {
     )
     await writingQueue
   }
-  async function getConfigFile() {
+  async function getCacheFile() {
     const configDirectory = Path.join(os.homedir(), '.sb-babel-cli')
     await mkdirpAsync(configDirectory)
     const configFilePath = Path.join(
       configDirectory,
       `cache-timestamps-${getSha1(config.sourceDirectory)}`,
     )
-    return ConfigFile.get(configFilePath)
+    return getConfigFile(configFilePath)
   }
 
-  const configFile = await getConfigFile()
+  const configFile = await getCacheFile()
   await iterate({
     rootDirectory: config.sourceDirectory,
     sourceDirectory: config.sourceDirectory,
