@@ -1,6 +1,7 @@
 ### 0.0.4
 
 - Upgrade to latest `sb-config-file`
+- Upgrade anymatch and chokdar to latest versions
 
 ### 0.0.3
 
