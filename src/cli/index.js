@@ -44,15 +44,22 @@ if (typeof program.outputDirectory === 'undefined') {
   process.exit(1)
 }
 
+const watch = get(program, 'watch', false)
 doTheMagic({
-  watch: get(program, 'watch', false),
+  watch,
   ignored: get(program, 'ignored', []),
   disableCache: get(program, 'disableCache', false),
   writeFlowSources: get(program, 'writeFlowSources', false),
   keepExtraFiles: get(program, 'keepExtraFiles', false),
   sourceDirectory: program.args[0],
   outputDirectory: program.outputDirectory,
-}).catch(error => {
-  handleError(error)
-  process.exit(1)
 })
+  .then(() => {
+    if (!watch) {
+      process.exit()
+    }
+  })
+  .catch(error => {
+    handleError(error)
+    process.exit(1)
+  })

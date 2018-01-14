@@ -96,6 +96,7 @@ export default (async function doTheMagic(config: Config) {
     },
   })
 
+  await writingQueue
   if (!config.watch) return
 
   const resolvedSourceDirectory = Path.resolve(config.sourceDirectory)
