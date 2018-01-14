@@ -6,7 +6,7 @@
   },
   "author": "steelbrain",
   "readme": "./README.md",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "A smarter babel-cli",
   "repository": "https://github.com/steelbrain/babel-cli",
   "license": "MIT",
