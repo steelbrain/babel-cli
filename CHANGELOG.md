@@ -1,3 +1,7 @@
+### 0.0.5
+
+- Fix a bug sometimes when the CLI won't quit
+
 ### 0.0.4
 
 - Upgrade to latest `sb-config-file`
