@@ -140,7 +140,7 @@ export default (async function doTheMagic(config: Config) {
       process.stdin.unref()
     }
     process.stdin.on('data', function(chunk) {
-      if (chunk.toString() === 'rs') {
+      if (chunk.toString().trim() === 'rs') {
         debounceExecute()
       }
     })
