@@ -124,7 +124,9 @@ export default (async function doTheMagic(config: Config) {
         !config.disableCache &&
         (await configFile.get(getSha1(sourceFile))) === stats.mtime.getTime()
       ) {
-        log(sourceFile, 'is unchanged')
+        if (!config.execute) {
+          log(sourceFile, 'is unchanged')
+        }
         return
       }
       await processFile(sourceFile, outputFile, stats, configFile)
