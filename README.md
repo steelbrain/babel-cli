@@ -2,6 +2,8 @@
 
 A smarter babel-cli. Supports caching and removing extra files from output directories.
 
+Also supports running apps like nodemon, with `--execute/-x`, `--execute-delay`
+
 ### Installation
 
 ```
@@ -29,7 +31,18 @@ Options:
   --disable-cache                     Force recompile all files ignoring cache
   --keep-extra-files                  Do NOT delete extra files in the output directory
   -o, --output-directory <directory>  Output directory to write transpiled files to
+  -x, --execute <entryFile>           Relative path of file to execute (only supported in watcher mode)
+  --execute-delay <delay>             Delay in ms to in between restarts of executed file
   -h, --help                          output usage information
+```
+
+### Examples
+
+```
+# To compile contents of src to lib directory
+$ sb-babel-cli src -o lib
+# To compile contents of src to lib directory and execute lib/server
+$ sb-babel-cli src -o lib -x lib/server
 ```
 
 ### License
