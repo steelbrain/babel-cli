@@ -22,8 +22,10 @@
   },
   "dependencies": {
     "anymatch": "^2.0.0",
+    "chalk": "^2.3.0",
     "chokidar": "^2.0.0",
     "commander": "^2.12.2",
+    "lodash": "^4.17.4",
     "mkdirp": "^0.5.1",
     "p-map-series": "^1.0.0",
     "resolve-from": "^4.0.0",
