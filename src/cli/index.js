@@ -64,6 +64,11 @@ const config = {
   executeDelay: get(program, 'executeDelay', 250),
 }
 
+if (!config.watch && config.execute) {
+  console.error('ERROR: --execute is not supported without --watch')
+  process.exit(1)
+}
+
 doTheMagic(config)
   .then(() => {
     if (!config.watch) {
