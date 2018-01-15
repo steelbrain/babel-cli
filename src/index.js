@@ -133,6 +133,16 @@ export default (async function doTheMagic(config: Config) {
 
   await writingQueue
   if (!config.watch) return
+  if (config.execute && process.stdin) {
+    if (typeof process.stdin.unref === 'function') {
+      process.stdin.unref()
+    }
+    process.stdin.on('data', function(chunk) {
+      if (chunk.toString() === 'rs') {
+        debounceExecute()
+      }
+    })
+  }
 
   const resolvedSourceDirectory = Path.resolve(config.sourceDirectory)
   const watcher = chokidar.watch(resolvedSourceDirectory, {
