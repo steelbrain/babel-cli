@@ -1,3 +1,7 @@
+### 0.1.0
+
+- Add support for nodemon like execution with `-x/--execute`, `--execute-delay`
+
 ### 0.0.5
 
 - Fix a bug sometimes when the CLI won't quit
