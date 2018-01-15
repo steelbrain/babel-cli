@@ -173,11 +173,9 @@ export default (async function doTheMagic(config: Config) {
   watcher.on('unlink', function(givenFileName) {
     const fileName = Path.relative(resolvedSourceDirectory, givenFileName)
     const outputFile = Path.join(config.outputDirectory, fileName)
-    FS.unlink(outputFile)
-      .catch(function() {
-        /* No Op */
-      })
-      .then(debounceExecute)
+    FS.unlink(outputFile).catch(function() {
+      /* No Op */
+    })
   })
   debounceExecute()
 })

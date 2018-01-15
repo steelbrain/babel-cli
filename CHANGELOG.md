@@ -1,3 +1,7 @@
+### 0.1.1
+
+- Do not restart executed programs on file unlink (git checkouts are not smooth because of it)
+
 ### 0.1.0
 
 - Add support for nodemon like execution with `-x/--execute`, `--execute-delay`
