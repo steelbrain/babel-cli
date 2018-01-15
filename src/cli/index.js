@@ -32,6 +32,13 @@ program
   .option('--disable-cache', 'Force recompile all files ignoring cache')
   .option('--keep-extra-files', 'Do NOT delete extra files in the output directory')
   .option('-o, --output-directory <directory>', 'Output directory to write transpiled files to')
+  .option(
+    '-x, --execute <entryFile>',
+    'Relative path of file to execute (only supported in watcher mode)',
+  )
+  .option('--execute-delay <delay>', 'Delay in ms to in between restarts of executed file', value =>
+    parseInt(value, 10),
+  )
   .parse(process.argv)
 
 if (program.args.length !== 1) {
@@ -44,18 +51,22 @@ if (typeof program.outputDirectory === 'undefined') {
   process.exit(1)
 }
 
-const watch = get(program, 'watch', false)
-doTheMagic({
-  watch,
+const config = {
+  watch: get(program, 'watch', false),
   ignored: get(program, 'ignored', []),
   disableCache: get(program, 'disableCache', false),
   writeFlowSources: get(program, 'writeFlowSources', false),
   keepExtraFiles: get(program, 'keepExtraFiles', false),
   sourceDirectory: program.args[0],
   outputDirectory: program.outputDirectory,
-})
+
+  execute: get(program, 'execute', ''),
+  executeDelay: get(program, 'executeDelay', 250),
+}
+
+doTheMagic(config)
   .then(() => {
-    if (!watch) {
+    if (!config.watch) {
       process.exit()
     }
   })
