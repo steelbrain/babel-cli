@@ -8,4 +8,7 @@ export type Config = {
   keepExtraFiles: boolean,
   sourceDirectory: string,
   outputDirectory: string,
+
+  execute: string,
+  executeDelay: number,
 }
