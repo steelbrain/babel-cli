@@ -1,6 +1,7 @@
 // @flow
 
 export type Config = {
+  root: string,
   watch: boolean,
   ignored: Array<string>,
   disableCache: boolean,

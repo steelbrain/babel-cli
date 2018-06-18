@@ -1,3 +1,7 @@
+### 0.2.1
+
+- Support for Babel 7
+
 ### 0.1.2
 
 - Fix support for `--write-flow-sources`
