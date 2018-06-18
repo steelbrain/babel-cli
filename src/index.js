@@ -67,9 +67,13 @@ export default (async function doTheMagic(config: Config) {
     })
     log(sourceFile, '->', outputFile)
     if (config.writeFlowSources) {
+      const flowOutputFile = `${outputFile}.flow`
       try {
-        const flowOutputFile = `${outputFile}.flow`
         await FS.unlink(flowOutputFile)
+      } catch (_) {
+        /* No Op */
+      }
+      try {
         await FS.symlink(Path.resolve(sourceFile), flowOutputFile)
         log(sourceFile, '->', flowOutputFile)
       } catch (error) {

@@ -1,3 +1,7 @@
+### 0.1.2
+
+- Fix support for `--write-flow-sources`
+
 ### 0.1.1
 
 - Do not restart executed programs on file unlink (git checkouts are not smooth because of it)
