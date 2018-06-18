@@ -44,12 +44,12 @@ export default (async function doTheMagic(config: Config) {
     if (!transformFileCached) {
       let resolved
       try {
-        resolved = resolveFrom(config.sourceDirectory, 'babel-core')
+        resolved = resolveFrom(config.sourceDirectory, '@babel/core')
       } catch (_) {
         /* No Op */
       }
       if (!resolved) {
-        throw new CLIError('Unable to find babel-core in your project')
+        throw new CLIError('Unable to find @babel/core in your project')
       }
       // $FlowIgnore: SORRY FLOW!
       const babelCore = require(resolved) // eslint-disable-line global-require,import/no-dynamic-require
@@ -61,7 +61,9 @@ export default (async function doTheMagic(config: Config) {
   async function processFile(sourceFile, outputFile, stats, configFile) {
     if (!sourceFile.endsWith('.js')) return
 
-    const transformed = await getTransformFile()(sourceFile)
+    const transformed = await getTransformFile()(sourceFile, {
+      root: config.root,
+    })
     await FS.writeFile(outputFile, transformed.code, {
       mode: stats.mode,
     })

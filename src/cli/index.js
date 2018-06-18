@@ -19,6 +19,7 @@ program
   .description(manifest.description)
   .usage('[options] <source directory>')
   .option('-w, --watch', 'Watch files for changes')
+  .option('--root <directory>', 'Root directory for babel. This is where presets are resolved from')
   .option('--ignored <list>', 'Ignored files and directories that match the given globs', value =>
     value
       .split(',')
@@ -52,6 +53,7 @@ if (typeof program.outputDirectory === 'undefined') {
 }
 
 const config = {
+  root: get(program, 'root', process.cwd()),
   watch: get(program, 'watch', false),
   ignored: get(program, 'ignored', []),
   disableCache: get(program, 'disableCache', false),
