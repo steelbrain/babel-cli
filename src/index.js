@@ -27,7 +27,7 @@ function getSha1(contents: string): string {
   return hash.digest('hex')
 }
 
-export default (async function doTheMagic(config: Config) {
+async function main(config: Config) {
   let writingQueue = Promise.resolve()
   let executionQueue = Promise.resolve()
   let spawnedProcess
@@ -184,4 +184,6 @@ export default (async function doTheMagic(config: Config) {
     })
   })
   debounceExecute()
-})
+}
+
+export default main

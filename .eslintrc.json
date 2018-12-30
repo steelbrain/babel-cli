@@ -1,8 +1,5 @@
 {
   "extends": [
-    "steelbrain",
-    "prettier",
-    "prettier/flowtype"
-  ],
-  "plugins": ["prettier"]
+    "steelbrain"
+  ]
 }
