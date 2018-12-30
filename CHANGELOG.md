@@ -1,3 +1,9 @@
+### 1.0.0
+
+- Iron out some bugs
+- Debounce write to cache files
+- Add a default execution delay (1 second)
+
 ### 0.2.1
 
 - Support for Babel 7

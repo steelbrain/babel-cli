@@ -1,17 +1,11 @@
-// @flow
-
-import FS from 'sb-fs'
-import Path from 'path'
-import mkdirp from 'mkdirp'
-import rimraf from 'rimraf'
-import promisify from 'sb-promisify'
-import pMapSeries from 'p-map-series'
+import del from 'del'
+import fs from 'sb-fs'
+import path from 'path'
+import pMap from 'p-map'
+import makeDir from 'make-dir'
 import anymatch from 'anymatch'
 
-const rimrafAsync = promisify(rimraf)
-const mkdirpAsync = promisify(mkdirp)
-
-export default (async function iterate({
+async function iterate({
   rootDirectory,
   sourceDirectory,
   outputDirectory,
@@ -19,43 +13,37 @@ export default (async function iterate({
   keepExtraFiles,
   filesToKeep,
   callback,
-}: {
-  rootDirectory: string,
-  sourceDirectory: string,
-  outputDirectory: string,
-  ignored: Array<string>,
-  keepExtraFiles: boolean,
-  filesToKeep: (sourceItems: Array<string>) => Array<string>,
-  callback: (sourceFile: string, outputFile: string, sourceStats: FS.Stats) => Promise<void>,
-}): Promise<void> {
-  const contents = await FS.readdir(sourceDirectory)
+}) {
+  const contents = await fs.readdir(sourceDirectory)
 
   let outputStats
   let outputDirectoryExists = false
   try {
-    outputStats = await FS.stat(outputDirectory)
+    outputStats = await fs.stat(outputDirectory)
   } catch (_) {
     /* No Op */
   }
-  if (outputStats && !outputStats.isDirectory()) {
-    await rimrafAsync(outputDirectory)
-    outputStats = null
+  if (outputStats) {
+    if (outputStats.isDirectory()) {
+      outputDirectoryExists = true
+    } else {
+      await del(outputDirectory)
+      outputStats = null
+    }
   }
-  if (outputStats && outputStats.isDirectory()) {
-    outputDirectoryExists = true
-  }
-  const outputContents = outputStats ? await FS.readdir(outputDirectory) : []
+
+  const outputContents = outputStats ? await fs.readdir(outputDirectory) : []
 
   if (!keepExtraFiles) {
     const whitelist = filesToKeep(contents)
     const filesToDelete = outputContents
       .filter(item => !whitelist.includes(item))
-      .map(item => Path.resolve(outputDirectory, item))
-    await pMapSeries(filesToDelete, item => rimrafAsync(item))
+      .map(item => path.resolve(outputDirectory, item))
+    await Promise.all(filesToDelete.map(item => del(item)))
   }
-  await pMapSeries(contents, async function(fileName) {
-    const filePath = Path.join(sourceDirectory, fileName)
-    const stat = await FS.lstat(filePath)
+  await pMap(contents, async function(fileName) {
+    const filePath = path.join(sourceDirectory, fileName)
+    const stat = await fs.lstat(filePath)
     if (stat.isSymbolicLink()) {
       // NOTE: We ignore symlinks
       return
@@ -63,23 +51,24 @@ export default (async function iterate({
     if (
       anymatch(ignored, fileName) ||
       anymatch(ignored, filePath) ||
-      anymatch(ignored, Path.relative(rootDirectory, filePath))
+      anymatch(ignored, path.relative(rootDirectory, filePath))
     ) {
       // NOTE: We ignore ignored files
       return
     }
     if (stat.isFile()) {
       if (!fileName.endsWith('.js')) return
+
       if (!outputDirectoryExists) {
-        await mkdirpAsync(outputDirectory)
+        await makeDir(outputDirectory)
         outputDirectoryExists = true
       }
-      await callback(filePath, Path.join(outputDirectory, fileName), stat)
+      await callback(filePath, path.join(outputDirectory, fileName), stat)
     } else if (stat.isDirectory()) {
       await iterate({
         rootDirectory,
-        sourceDirectory: Path.join(sourceDirectory, fileName),
-        outputDirectory: Path.join(outputDirectory, fileName),
+        sourceDirectory: path.join(sourceDirectory, fileName),
+        outputDirectory: path.join(outputDirectory, fileName),
         ignored,
         keepExtraFiles,
         filesToKeep,
@@ -87,4 +76,6 @@ export default (async function iterate({
       })
     }
   })
-})
+}
+
+export default iterate
