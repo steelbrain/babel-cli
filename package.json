@@ -19,7 +19,7 @@
     "prepare": "npm run build",
     "build": "npm run clean; babel src --out-dir lib",
     "watch": "npm run build -- -w",
-    "test": "(eslint . )"
+    "lint": "(eslint . ) && (prettier --list-different src/*.js)"
   },
   "dependencies": {
     "anymatch": "^2.0.0",
