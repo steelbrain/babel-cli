@@ -3,8 +3,8 @@
 import get from 'lodash/get'
 import program from 'commander'
 
-import doTheMagic from '..'
-import handleError from '../handleError'
+import main from '..'
+import { logError } from '../helpers'
 import manifest from '../../package.json'
 
 program
@@ -30,8 +30,10 @@ program
     '-x, --execute <entryFile>',
     'Relative path of file to execute (only supported in watcher mode)',
   )
-  .option('--execute-delay <delay>', 'Delay in ms to in between restarts of executed file', value =>
-    parseInt(value, 10),
+  .option(
+    '--execute-delay <delay>',
+    'Delay in ms to in between restarts of executed file (defaults to 1000ms)',
+    value => parseInt(value, 10) || 1000,
   )
   .parse(process.argv)
 
@@ -64,13 +66,13 @@ if (!config.watch && config.execute) {
   process.exit(1)
 }
 
-doTheMagic(config)
+main(config)
   .then(() => {
     if (!config.watch) {
       process.exit()
     }
   })
   .catch(error => {
-    handleError(error)
+    logError(error)
     process.exit(1)
   })

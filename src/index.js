@@ -1,25 +1,23 @@
 import os from 'os'
+import path from 'path'
+import fs from 'sb-fs'
 import chalk from 'chalk'
-import mkdirp from 'mkdirp'
+import PQueue from 'p-queue'
+import makeDir from 'make-dir'
 import chokidar from 'chokidar'
-import promisify from 'sb-promisify'
 import debounce from 'lodash/debounce'
 import childProcess from 'child_process'
-import resolveFrom from 'resolve-from'
 
 import manifest from '../package.json'
-import CLIError from './CLIError'
-import handleError from './handleError'
 import iterate from './iterate'
-import { getSha1 } from './helpers'
-
-const mkdirpAsync = promisify(mkdirp)
+import { getSha1, getCacheDB, getBabelTransformFile, logError } from './helpers'
 
 async function main(config) {
-  let writingQueue = Promise.resolve()
-  let executionQueue = Promise.resolve()
   let spawnedProcess
-  let transformFileCached
+
+  const timestampCache = await getCacheDB(config.sourceDirectory, !config.disableCache)
+  const babelTransformFile = getBabelTransformFile()
+  const transformationQueue = new PQueue({ concurrency: os.cpus().length })
 
   function log(...items) {
     if (config.execute) {
@@ -28,66 +26,38 @@ async function main(config) {
       console.log(...items)
     }
   }
-  function getTransformFile() {
-    if (!transformFileCached) {
-      let resolved
-      try {
-        resolved = resolveFrom(config.sourceDirectory, '@babel/core')
-      } catch (_) {
-        /* No Op */
-      }
-      if (!resolved) {
-        throw new CLIError('Unable to find @babel/core in your project')
-      }
-      // $FlowIgnore: SORRY FLOW!
-      const babelCore = require(resolved) // eslint-disable-line global-require,import/no-dynamic-require
-      transformFileCached = promisify(babelCore.transformFile)
-    }
-    return transformFileCached
-  }
 
-  async function processFile(sourceFile, outputFile, stats, configFile) {
+  async function processFile(sourceFile, outputFile, stats) {
     if (!sourceFile.endsWith('.js')) return
 
-    const transformed = await getTransformFile()(sourceFile, {
+    const transformed = await babelTransformFile(sourceFile, {
       root: config.root,
     })
-    await FS.writeFile(outputFile, transformed.code, {
+    await makeDir(path.dirname(outputFile))
+    await fs.writeFile(outputFile, transformed.code, {
       mode: stats.mode,
     })
     log(sourceFile, '->', outputFile)
     if (config.writeFlowSources) {
       const flowOutputFile = `${outputFile}.flow`
       try {
-        await FS.unlink(flowOutputFile)
+        await fs.unlink(flowOutputFile)
       } catch (_) {
         /* No Op */
       }
       try {
-        await FS.symlink(Path.resolve(sourceFile), flowOutputFile)
+        await fs.symlink(path.resolve(sourceFile), flowOutputFile)
         log(sourceFile, '->', flowOutputFile)
       } catch (error) {
         /* No Op */
       }
     }
-    writingQueue = writingQueue.then(() =>
-      configFile.set(getSha1(sourceFile), stats.mtime.getTime()),
-    )
-    await writingQueue
+    timestampCache.set(getSha1(sourceFile), stats.mtime.getTime()).write()
   }
 
-  async function getCacheFile() {
-    const configDirectory = Path.join(os.homedir(), '.sb-babel-cli')
-    await mkdirpAsync(configDirectory)
-    const configFilePath = Path.join(
-      configDirectory,
-      `cache-timestamps-${getSha1(config.sourceDirectory)}`,
-    )
-    return getConfigFile(configFilePath)
-  }
-
-  async function execute() {
+  function execute() {
     if (!config.execute) return
+
     if (!spawnedProcess) {
       log(chalk.yellow(manifest.version))
       log(chalk.yellow('to restart at any time, enter `rs`'))
@@ -102,10 +72,13 @@ async function main(config) {
   }
 
   const debounceExecute = debounce(function() {
-    executionQueue = executionQueue.then(execute).catch(handleError)
+    try {
+      execute()
+    } catch (error) {
+      logError(error)
+    }
   }, config.executeDelay)
 
-  const configFile = await getCacheFile()
   await iterate({
     rootDirectory: config.sourceDirectory,
     sourceDirectory: config.sourceDirectory,
@@ -114,20 +87,17 @@ async function main(config) {
     keepExtraFiles: config.keepExtraFiles,
     filesToKeep: input => input.concat(config.writeFlowSources ? input.map(i => `${i}.flow`) : []),
     async callback(sourceFile, outputFile, stats) {
-      if (
-        !config.disableCache &&
-        (await configFile.get(getSha1(sourceFile))) === stats.mtime.getTime()
-      ) {
+      const cachedTimestamp = await timestampCache.get(getSha1(sourceFile)).value()
+      if (cachedTimestamp === stats.mtime.getTime()) {
         if (!config.execute) {
           log(sourceFile, 'is unchanged')
         }
         return
       }
-      await processFile(sourceFile, outputFile, stats, configFile)
+      transformationQueue.add(() => processFile(sourceFile, outputFile, stats)).catch(logError)
     },
   })
 
-  await writingQueue
   if (!config.watch) return
   if (config.execute && process.stdin) {
     if (typeof process.stdin.unref === 'function') {
@@ -140,37 +110,39 @@ async function main(config) {
     })
   }
 
-  const resolvedSourceDirectory = Path.resolve(config.sourceDirectory)
+  const resolvedSourceDirectory = path.resolve(config.sourceDirectory)
   const watcher = chokidar.watch(resolvedSourceDirectory, {
     ignored: config.ignored,
     alwaysStat: true,
     ignoreInitial: true,
   })
   watcher.on('add', function(givenFileName, stats) {
-    const fileName = Path.relative(resolvedSourceDirectory, givenFileName)
-    const sourceFile = Path.join(config.sourceDirectory, fileName)
-    const outputFile = Path.join(config.outputDirectory, fileName)
-    mkdirpAsync(Path.dirname(outputFile))
-      .then(() => processFile(sourceFile, outputFile, stats, configFile))
-      .catch(handleError)
+    const fileName = path.relative(resolvedSourceDirectory, givenFileName)
+    const sourceFile = path.join(config.sourceDirectory, fileName)
+    const outputFile = path.join(config.outputDirectory, fileName)
+    transformationQueue
+      .add(() => processFile(sourceFile, outputFile, stats))
+      .catch(logError)
       .then(debounceExecute)
   })
   watcher.on('change', function(givenFileName, stats) {
-    const fileName = Path.relative(resolvedSourceDirectory, givenFileName)
-    const sourceFile = Path.join(config.sourceDirectory, fileName)
-    const outputFile = Path.join(config.outputDirectory, fileName)
-    mkdirpAsync(Path.dirname(outputFile))
-      .then(() => processFile(sourceFile, outputFile, stats, configFile))
-      .catch(handleError)
+    const fileName = path.relative(resolvedSourceDirectory, givenFileName)
+    const sourceFile = path.join(config.sourceDirectory, fileName)
+    const outputFile = path.join(config.outputDirectory, fileName)
+    transformationQueue
+      .add(() => processFile(sourceFile, outputFile, stats))
+      .catch(logError)
       .then(debounceExecute)
   })
   watcher.on('unlink', function(givenFileName) {
-    const fileName = Path.relative(resolvedSourceDirectory, givenFileName)
-    const outputFile = Path.join(config.outputDirectory, fileName)
-    FS.unlink(outputFile).catch(function() {
+    const fileName = path.relative(resolvedSourceDirectory, givenFileName)
+    const outputFile = path.join(config.outputDirectory, fileName)
+    fs.unlink(outputFile).catch(function() {
       /* No Op */
     })
   })
+
+  await transformationQueue.onIdle()
   debounceExecute()
 }
 
