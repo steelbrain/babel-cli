@@ -1,3 +1,7 @@
+### 1.0.1
+
+- Fix a regression where some files were not processed when `-x/--execute` was not specified
+
 ### 1.0.0
 
 - Iron out some bugs

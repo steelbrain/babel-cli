@@ -14,9 +14,10 @@ import { getSha1, getCacheDB, getBabelTransformFile, logError } from './helpers'
 
 async function main(config) {
   let spawnedProcess
+  const resolvedSourceDirectory = path.resolve(config.root, config.sourceDirectory)
 
-  const timestampCache = await getCacheDB(config.sourceDirectory, !config.disableCache)
-  const babelTransformFile = getBabelTransformFile(config.sourceDirectory)
+  const timestampCache = await getCacheDB(resolvedSourceDirectory, !config.disableCache)
+  const babelTransformFile = getBabelTransformFile(resolvedSourceDirectory)
   const transformationQueue = new PQueue({ concurrency: os.cpus().length })
 
   function log(...items) {
@@ -98,7 +99,10 @@ async function main(config) {
     },
   })
 
-  if (!config.watch) return
+  if (!config.watch) {
+    await transformationQueue.onIdle()
+    return
+  }
   if (config.execute && process.stdin) {
     if (typeof process.stdin.unref === 'function') {
       process.stdin.unref()
@@ -110,7 +114,6 @@ async function main(config) {
     })
   }
 
-  const resolvedSourceDirectory = path.resolve(config.sourceDirectory)
   const watcher = chokidar.watch(resolvedSourceDirectory, {
     ignored: config.ignored,
     alwaysStat: true,
