@@ -69,7 +69,9 @@ if (!config.watch && config.execute) {
 main(config)
   .then(() => {
     if (!config.watch) {
-      process.exit()
+      setTimeout(function() {
+        process.exit()
+      }, 5000)
     }
   })
   .catch(error => {

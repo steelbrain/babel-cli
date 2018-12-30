@@ -1,6 +1,10 @@
+### 1.0.3
+
+- Fix a regression where cache would not be saved when project had only a few files
+
 ### 1.0.2
 
-- Fix another regression where cache directory would not be created if it didn't exist
+- Fix a regression where cache directory would not be created if it didn't exist
 
 ### 1.0.1
 
