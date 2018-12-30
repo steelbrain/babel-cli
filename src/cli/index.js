@@ -1,18 +1,11 @@
 #!/usr/bin/env node
-// @flow
 
+import get from 'lodash/get'
 import program from 'commander'
 
-import doTheMagic from '../'
+import doTheMagic from '..'
 import handleError from '../handleError'
 import manifest from '../../package.json'
-
-function get(obj, key, defaultValue): any {
-  if (typeof obj[key] === 'undefined') {
-    return defaultValue
-  }
-  return obj[key]
-}
 
 program
   .version(manifest.version)

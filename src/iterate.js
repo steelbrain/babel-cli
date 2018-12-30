@@ -1,5 +1,3 @@
-// @flow
-
 import FS from 'sb-fs'
 import Path from 'path'
 import mkdirp from 'mkdirp'
@@ -11,7 +9,7 @@ import anymatch from 'anymatch'
 const rimrafAsync = promisify(rimraf)
 const mkdirpAsync = promisify(mkdirp)
 
-export default (async function iterate({
+async function iterate({
   rootDirectory,
   sourceDirectory,
   outputDirectory,
@@ -19,15 +17,7 @@ export default (async function iterate({
   keepExtraFiles,
   filesToKeep,
   callback,
-}: {
-  rootDirectory: string,
-  sourceDirectory: string,
-  outputDirectory: string,
-  ignored: Array<string>,
-  keepExtraFiles: boolean,
-  filesToKeep: (sourceItems: Array<string>) => Array<string>,
-  callback: (sourceFile: string, outputFile: string, sourceStats: FS.Stats) => Promise<void>,
-}): Promise<void> {
+}) {
   const contents = await FS.readdir(sourceDirectory)
 
   let outputStats
@@ -87,4 +77,6 @@ export default (async function iterate({
       })
     }
   })
-})
+}
+
+export default iterate

@@ -1,33 +1,21 @@
-// @flow
-
 import os from 'os'
-import FS from 'sb-fs'
-import Path from 'path'
 import chalk from 'chalk'
-import crypto from 'crypto'
 import mkdirp from 'mkdirp'
 import chokidar from 'chokidar'
 import promisify from 'sb-promisify'
 import debounce from 'lodash/debounce'
 import childProcess from 'child_process'
-import getConfigFile from 'sb-config-file'
 import resolveFrom from 'resolve-from'
 
 import manifest from '../package.json'
 import CLIError from './CLIError'
 import handleError from './handleError'
 import iterate from './iterate'
-import type { Config } from './types'
+import { getSha1 } from './helpers'
 
 const mkdirpAsync = promisify(mkdirp)
 
-function getSha1(contents: string): string {
-  const hash = crypto.createHash('sha1')
-  hash.update(contents)
-  return hash.digest('hex')
-}
-
-async function main(config: Config) {
+async function main(config) {
   let writingQueue = Promise.resolve()
   let executionQueue = Promise.resolve()
   let spawnedProcess
