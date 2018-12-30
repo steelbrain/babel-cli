@@ -16,7 +16,11 @@ export function getSha1(contents) {
 }
 
 export async function getCacheDB(projectPath, loadState) {
-  const configPath = path.join(os.homedir(), '.sb-babel-cli', `timestamps-${getSha1(projectPath)}`)
+  const configPath = path.join(
+    os.homedir(),
+    '.sb-babel-cli',
+    `cache-timestamps-${getSha1(projectPath)}`,
+  )
 
   const adapter = new AdapterFileAsync(configPath, {
     serialize: JSON.stringify,
