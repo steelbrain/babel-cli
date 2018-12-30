@@ -1,3 +1,7 @@
+### 1.0.2
+
+- Fix another regression where cache directory would not be created if it didn't exist
+
 ### 1.0.1
 
 - Fix a regression where some files were not processed when `-x/--execute` was not specified

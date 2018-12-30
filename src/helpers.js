@@ -3,6 +3,7 @@ import low from 'lowdb'
 import pify from 'pify'
 import path from 'path'
 import crypto from 'crypto'
+import makeDir from 'make-dir'
 import debounce from 'lodash/debounce'
 import resolveFrom from 'resolve-from'
 import AdapterFileAsync from 'lowdb/adapters/FileAsync'
@@ -21,6 +22,7 @@ export async function getCacheDB(projectPath, loadState) {
     '.sb-babel-cli',
     `cache-timestamps-${getSha1(projectPath)}`,
   )
+  await makeDir(path.dirname(configPath))
 
   const adapter = new AdapterFileAsync(configPath, {
     serialize: JSON.stringify,
