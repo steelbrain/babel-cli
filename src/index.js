@@ -16,7 +16,7 @@ async function main(config) {
   let spawnedProcess
 
   const timestampCache = await getCacheDB(config.sourceDirectory, !config.disableCache)
-  const babelTransformFile = getBabelTransformFile()
+  const babelTransformFile = getBabelTransformFile(config.sourceDirectory)
   const transformationQueue = new PQueue({ concurrency: os.cpus().length })
 
   function log(...items) {

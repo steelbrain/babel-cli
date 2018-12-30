@@ -1,9 +1,9 @@
 import os from 'os'
 import low from 'lowdb'
+import pify from 'pify'
 import path from 'path'
 import crypto from 'crypto'
 import debounce from 'lodash/debounce'
-import promisify from 'sb-promisify'
 import resolveFrom from 'resolve-from'
 import AdapterFileAsync from 'lowdb/adapters/FileAsync'
 
@@ -23,9 +23,9 @@ export async function getCacheDB(projectPath, loadState) {
   })
   adapter.write = debounce(adapter.write, 1000)
 
-  const db = low(adapter)
-  if (loadState) {
-    await db.read()
+  const db = await low(adapter)
+  if (!loadState) {
+    await db.setState({})
   }
   return db
 }
@@ -52,7 +52,7 @@ export function getBabelTransformFile(projectPath) {
     }
     // eslint-disable-next-line global-require,import/no-dynamic-require
     const babelCore = require(resolved)
-    transformFileCached = promisify(babelCore.transformFile)
+    transformFileCached = pify(babelCore.transformFile)
   }
   return transformFileCached
 }
