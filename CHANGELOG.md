@@ -1,3 +1,7 @@
+### 1.0.4
+
+- WHYYYY -HOW?? DID BABEL PRESET ENV APPEAR IN MANIFEST???
+
 ### 1.0.3
 
 - Fix a regression where cache would not be saved when project had only a few files
