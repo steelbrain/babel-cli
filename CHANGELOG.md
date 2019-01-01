@@ -1,3 +1,7 @@
+### 1.0.5
+
+- Remove an unnecessary deferred `process.exit`
+
 ### 1.0.4
 
 - WHYYYY -HOW?? DID BABEL PRESET ENV APPEAR IN MANIFEST???

@@ -66,15 +66,7 @@ if (!config.watch && config.execute) {
   process.exit(1)
 }
 
-main(config)
-  .then(() => {
-    if (!config.watch) {
-      setTimeout(function() {
-        process.exit()
-      }, 5000)
-    }
-  })
-  .catch(error => {
-    logError(error)
-    process.exit(1)
-  })
+main(config).catch(error => {
+  logError(error)
+  process.exit(1)
+})
