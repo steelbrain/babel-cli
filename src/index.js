@@ -5,6 +5,7 @@ import chalk from 'chalk'
 import PQueue from 'p-queue'
 import makeDir from 'make-dir'
 import chokidar from 'chokidar'
+import anymatch from 'anymatch'
 import debounce from 'lodash/debounce'
 import childProcess from 'child_process'
 
@@ -136,7 +137,11 @@ async function main(config) {
     transformationQueue
       .add(() => processFile(sourceFile, getOutputFilePath(outputFile), stats))
       .catch(logError)
-      .then(debounceExecute)
+      .then(() => {
+        if (!config.ignoredForRestart || anymatch(config.ignoredForRestart, sourceFile)) {
+          debounceExecute()
+        }
+      })
   })
   watcher.on('change', function(givenFileName, stats) {
     const fileName = path.relative(resolvedSourceDirectory, givenFileName)
@@ -145,7 +150,11 @@ async function main(config) {
     transformationQueue
       .add(() => processFile(sourceFile, getOutputFilePath(outputFile), stats))
       .catch(logError)
-      .then(debounceExecute)
+      .then(() => {
+        if (!config.ignoredForRestart || anymatch(config.ignoredForRestart, sourceFile)) {
+          debounceExecute()
+        }
+      })
   })
   watcher.on('unlink', function(givenFileName) {
     const fileName = path.relative(resolvedSourceDirectory, givenFileName)

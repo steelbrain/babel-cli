@@ -19,6 +19,7 @@ program
       .map(item => item.trim())
       .filter(Boolean),
   )
+  .option('--ignored-for-restart <list>', 'These files are compiled, but do not cause restart')
   .option(
     '--write-flow-sources',
     'Write .flow files that are symlinked to source files. Helps with monorepos in some cases',
@@ -52,6 +53,7 @@ const config = {
   root: get(program, 'root', process.cwd()),
   watch: get(program, 'watch', false),
   ignored: get(program, 'ignored', []),
+  ignoredForRestart: get(program, 'ignored-for-restart', []),
   disableCache: get(program, 'disableCache', false),
   writeFlowSources: get(program, 'writeFlowSources', false),
   keepExtraFiles: get(program, 'keepExtraFiles', false),
