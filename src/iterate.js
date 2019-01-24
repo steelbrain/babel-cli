@@ -7,6 +7,7 @@ import anymatch from 'anymatch'
 
 async function iterate({
   extensions,
+  getOutputFilePath,
   rootDirectory,
   sourceDirectory,
   outputDirectory,
@@ -36,7 +37,7 @@ async function iterate({
   const outputContents = outputStats ? await fs.readdir(outputDirectory) : []
 
   if (!keepExtraFiles) {
-    const whitelist = filesToKeep(contents)
+    const whitelist = filesToKeep(contents).map(getOutputFilePath)
     const filesToDelete = outputContents
       .filter(item => !whitelist.includes(item))
       .map(item => path.resolve(outputDirectory, item))
@@ -64,9 +65,12 @@ async function iterate({
         await makeDir(outputDirectory)
         outputDirectoryExists = true
       }
-      await callback(filePath, path.join(outputDirectory, fileName), stat)
+      const outputFile = getOutputFilePath(path.join(outputDirectory, fileName))
+      await callback(filePath, outputFile, stat)
     } else if (stat.isDirectory()) {
       await iterate({
+        extensions,
+        getOutputFilePath,
         rootDirectory,
         sourceDirectory: path.join(sourceDirectory, fileName),
         outputDirectory: path.join(outputDirectory, fileName),

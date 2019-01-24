@@ -20,6 +20,13 @@ async function main(config) {
   const timestampCache = await getCacheDB(resolvedSourceDirectory, !config.disableCache)
   const babelTransformFile = getBabelTransformFile(resolvedSourceDirectory)
   const transformationQueue = new PQueue({ concurrency: os.cpus().length })
+  const getOutputFilePath = filePath => {
+    const extName = path.extname(filePath)
+    if (extName.length) {
+      return `${filePath.slice(0, -1 * path.extname(filePath).length)}.js`
+    }
+    return filePath
+  }
 
   function log(...items) {
     if (config.execute) {
@@ -29,13 +36,12 @@ async function main(config) {
     }
   }
 
-  async function processFile(sourceFile, givenOutputFile, stats) {
+  async function processFile(sourceFile, outputFile, stats) {
     if (!extensions.includes(path.extname(sourceFile))) return
 
     const transformed = await babelTransformFile(sourceFile, {
       root: config.root,
     })
-    const outputFile = `${givenOutputFile.slice(0, -1 * path.extname(givenOutputFile).length)}.js`
     await makeDir(path.dirname(outputFile))
     await fs.writeFile(outputFile, transformed.code, {
       mode: stats.mode,
@@ -84,6 +90,7 @@ async function main(config) {
 
   await iterate({
     extensions,
+    getOutputFilePath,
     rootDirectory: config.sourceDirectory,
     sourceDirectory: config.sourceDirectory,
     outputDirectory: config.outputDirectory,
@@ -127,7 +134,7 @@ async function main(config) {
     const sourceFile = path.join(config.sourceDirectory, fileName)
     const outputFile = path.join(config.outputDirectory, fileName)
     transformationQueue
-      .add(() => processFile(sourceFile, outputFile, stats))
+      .add(() => processFile(sourceFile, getOutputFilePath(outputFile), stats))
       .catch(logError)
       .then(debounceExecute)
   })
@@ -136,7 +143,7 @@ async function main(config) {
     const sourceFile = path.join(config.sourceDirectory, fileName)
     const outputFile = path.join(config.outputDirectory, fileName)
     transformationQueue
-      .add(() => processFile(sourceFile, outputFile, stats))
+      .add(() => processFile(sourceFile, getOutputFilePath(outputFile), stats))
       .catch(logError)
       .then(debounceExecute)
   })

@@ -1,3 +1,7 @@
+### 1.2.0
+
+- Fix bugs from the recent typescript related changes
+
 ### 1.1.0
 
 - Add `--typescript` that enables processing of files ending with `.ts` and `.tsx`
