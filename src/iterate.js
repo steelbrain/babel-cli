@@ -6,6 +6,7 @@ import makeDir from 'make-dir'
 import anymatch from 'anymatch'
 
 async function iterate({
+  extensions,
   rootDirectory,
   sourceDirectory,
   outputDirectory,
@@ -57,7 +58,7 @@ async function iterate({
       return
     }
     if (stat.isFile()) {
-      if (!fileName.endsWith('.js')) return
+      if (!extensions.includes(path.extname(fileName))) return
 
       if (!outputDirectoryExists) {
         await makeDir(outputDirectory)

@@ -35,6 +35,7 @@ program
     'Delay in ms to in between restarts of executed file (defaults to 1000ms)',
     value => parseInt(value, 10) || 1000,
   )
+  .option('--typescript', 'Enables typescript support by processing .ts and .tsx files')
   .parse(process.argv)
 
 if (program.args.length !== 1) {
@@ -56,6 +57,7 @@ const config = {
   keepExtraFiles: get(program, 'keepExtraFiles', false),
   sourceDirectory: program.args[0],
   outputDirectory: program.outputDirectory,
+  typescript: program.typescript,
 
   execute: get(program, 'execute', ''),
   executeDelay: get(program, 'executeDelay', 250),

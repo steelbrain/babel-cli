@@ -1,3 +1,7 @@
+### 1.1.0
+
+- Add `--typescript` that enables processing of files ending with `.ts` and `.tsx`
+
 ### 1.0.5
 
 - Remove an unnecessary deferred `process.exit`

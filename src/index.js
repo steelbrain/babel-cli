@@ -16,6 +16,7 @@ async function main(config) {
   let spawnedProcess
   const resolvedSourceDirectory = path.resolve(config.root, config.sourceDirectory)
 
+  const extensions = config.typescript ? ['.ts', '.tsx', '.js'] : ['.js']
   const timestampCache = await getCacheDB(resolvedSourceDirectory, !config.disableCache)
   const babelTransformFile = getBabelTransformFile(resolvedSourceDirectory)
   const transformationQueue = new PQueue({ concurrency: os.cpus().length })
@@ -28,12 +29,13 @@ async function main(config) {
     }
   }
 
-  async function processFile(sourceFile, outputFile, stats) {
-    if (!sourceFile.endsWith('.js')) return
+  async function processFile(sourceFile, givenOutputFile, stats) {
+    if (!extensions.includes(path.extname(sourceFile))) return
 
     const transformed = await babelTransformFile(sourceFile, {
       root: config.root,
     })
+    const outputFile = `${givenOutputFile.slice(0, -1 * path.extname(givenOutputFile).length)}.js`
     await makeDir(path.dirname(outputFile))
     await fs.writeFile(outputFile, transformed.code, {
       mode: stats.mode,
@@ -81,6 +83,7 @@ async function main(config) {
   }, config.executeDelay)
 
   await iterate({
+    extensions,
     rootDirectory: config.sourceDirectory,
     sourceDirectory: config.sourceDirectory,
     outputDirectory: config.outputDirectory,
