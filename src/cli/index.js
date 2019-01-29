@@ -53,7 +53,7 @@ const config = {
   root: get(program, 'root', process.cwd()),
   watch: get(program, 'watch', false),
   ignored: get(program, 'ignored', []),
-  ignoredForRestart: get(program, 'ignored-for-restart', []),
+  ignoredForRestart: get(program, 'ignoredForRestart', null),
   disableCache: get(program, 'disableCache', false),
   writeFlowSources: get(program, 'writeFlowSources', false),
   keepExtraFiles: get(program, 'keepExtraFiles', false),

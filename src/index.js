@@ -138,7 +138,7 @@ async function main(config) {
       .add(() => processFile(sourceFile, getOutputFilePath(outputFile), stats))
       .catch(logError)
       .then(() => {
-        if (!config.ignoredForRestart || anymatch(config.ignoredForRestart, sourceFile)) {
+        if (!config.ignoredForRestart || !anymatch(config.ignoredForRestart, sourceFile)) {
           debounceExecute()
         }
       })
@@ -151,7 +151,7 @@ async function main(config) {
       .add(() => processFile(sourceFile, getOutputFilePath(outputFile), stats))
       .catch(logError)
       .then(() => {
-        if (!config.ignoredForRestart || anymatch(config.ignoredForRestart, sourceFile)) {
+        if (!config.ignoredForRestart || !anymatch(config.ignoredForRestart, sourceFile)) {
           debounceExecute()
         }
       })

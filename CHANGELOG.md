@@ -1,3 +1,7 @@
+### 1.2.1
+
+- Fix a bug with the recent option `--ignored-for-restart`
+
 ### 1.2.0
 
 - Fix bugs from the recent typescript related changes
