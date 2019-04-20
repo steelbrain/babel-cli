@@ -1,3 +1,8 @@
+### 2.0.0
+
+- Require at least Node v8
+- Upgrade all dependencies
+
 ### 1.2.1
 
 - Fix a bug with the recent option `--ignored-for-restart`
