@@ -22,24 +22,24 @@
     "lint": "(eslint . ) && (prettier --list-different src/*.js)"
   },
   "dependencies": {
-    "anymatch": "^2.0.0",
+    "anymatch": "^3.0.1",
     "chalk": "^2.4.1",
-    "chokidar": "^2.0.4",
+    "chokidar": "^2.1.5",
     "commander": "^2.19.0",
     "del": "^4.1.0",
     "lodash": "^4.17.11",
     "lowdb": "^1.0.0",
     "make-dir": "^3.0.0",
-    "p-map": "^2.0.0",
+    "p-map": "^2.1.0",
     "p-queue": "^5.0.0",
     "pify": "^4.0.1",
-    "resolve-from": "^4.0.0",
+    "resolve-from": "^5.0.0",
     "sb-fs": "^3.0.0"
   },
   "devDependencies": {
-    "@babel/cli": "^7.2.3",
+    "@babel/cli": "^7.4.3",
     "@babel/core": "^7.2.2",
-    "@babel/preset-env": "^7.2.3",
+    "@babel/preset-env": "^7.4.3",
     "eslint-config-steelbrain": "^7.0.0-beta1"
   },
   "engines": {
