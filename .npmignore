@@ -5,3 +5,4 @@ node_modules
 decls
 src
 .flowconfig
+.circleci
