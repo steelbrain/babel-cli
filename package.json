@@ -34,7 +34,7 @@
     "p-queue": "^5.0.0",
     "pify": "^4.0.1",
     "resolve-from": "^5.0.0",
-    "sb-fs": "^3.0.0"
+    "sb-fs": "^4.0.0"
   },
   "devDependencies": {
     "@babel/cli": "^7.4.3",
