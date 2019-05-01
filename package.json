@@ -24,7 +24,7 @@
   "dependencies": {
     "anymatch": "^3.0.1",
     "chalk": "^2.4.1",
-    "chokidar": "^2.1.5",
+    "chokidar": "^3.0.0",
     "commander": "^2.19.0",
     "del": "^4.1.0",
     "lodash": "^4.17.11",
