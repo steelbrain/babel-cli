@@ -76,9 +76,13 @@ async function main(config) {
     if (spawnedProcess) {
       spawnedProcess.kill()
     }
-    spawnedProcess = childProcess.spawn(process.execPath, [config.execute], {
-      stdio: 'inherit',
-    })
+    spawnedProcess = childProcess.spawn(
+      process.execPath,
+      config.nodeFlags.concat([config.execute]),
+      {
+        stdio: 'inherit',
+      },
+    )
   }
 
   const debounceExecute = debounce(function() {

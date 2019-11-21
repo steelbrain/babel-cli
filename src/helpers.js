@@ -8,6 +8,13 @@ import debounce from 'lodash/debounce'
 import resolveFrom from 'resolve-from'
 import AdapterFileAsync from 'lowdb/adapters/FileAsync'
 
+export const SUPPORTED_FLAGS = [
+  '--debug-port',
+  '--inspect-port',
+  '--inspect',
+  '--inspect-brk',
+  '--inspect-publish-uid',
+]
 export class CLIError extends Error {}
 
 export function getSha1(contents) {

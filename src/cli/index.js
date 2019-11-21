@@ -4,7 +4,7 @@ import get from 'lodash/get'
 import program from 'commander'
 
 import main from '..'
-import { logError } from '../helpers'
+import { logError, SUPPORTED_FLAGS } from '../helpers'
 import manifest from '../../package.json'
 
 program
@@ -37,6 +37,9 @@ program
     value => parseInt(value, 10) || 1000,
   )
   .option('--typescript', 'Enables typescript support by processing .ts and .tsx files')
+  .on('--help', () => {
+    console.log('\nSupported NodeJS CLI flags: ', SUPPORTED_FLAGS.join(', '))
+  })
   .parse(process.argv)
 
 if (program.args.length !== 1) {
@@ -49,6 +52,28 @@ if (typeof program.outputDirectory === 'undefined') {
   process.exit(1)
 }
 
+const nodeFlags = []
+SUPPORTED_FLAGS.forEach(item => {
+  const flagIndex = program.rawArgs.indexOf(item)
+  if (flagIndex !== -1) {
+    let flagValue = program.rawArgs[flagIndex + 1] || true
+    if (
+      typeof flagValue === 'undefined' ||
+      (typeof flagValue === 'string' &&
+        (flagValue.startsWith('-') || program.args.includes(flagValue)))
+    ) {
+      // ^ If it's got no value, or value is an option or value is present in args
+      // Then the value must not be own, so treat this as a boolean
+      flagValue = true
+    }
+    nodeFlags.push(item)
+    if (flagValue !== true) {
+      // ^ True values are unnecessary to specify
+      nodeFlags.push(flagValue)
+    }
+  }
+})
+
 const config = {
   root: get(program, 'root', process.cwd()),
   watch: get(program, 'watch', false),
@@ -60,6 +85,8 @@ const config = {
   sourceDirectory: program.args[0],
   outputDirectory: program.outputDirectory,
   typescript: program.typescript,
+
+  nodeFlags,
 
   execute: get(program, 'execute', ''),
   executeDelay: get(program, 'executeDelay', 250),
