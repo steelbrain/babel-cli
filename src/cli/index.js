@@ -38,11 +38,12 @@ program
   )
   .option('--typescript', 'Enables typescript support by processing .ts and .tsx files')
   .on('--help', () => {
-    console.log('\nSupported NodeJS CLI flags: ', SUPPORTED_FLAGS.join(', '))
+    console.log('\nArguments after -- will be passed as-are to the program specified in -x flag')
+    console.log('Supported NodeJS CLI flags: ', SUPPORTED_FLAGS.join(', '))
   })
   .parse(process.argv)
 
-if (program.args.length !== 1) {
+if (program.args.length < 1) {
   program.outputHelp()
   process.exit(1)
 }
@@ -87,6 +88,7 @@ const config = {
   typescript: program.typescript,
 
   nodeFlags,
+  programFlags: program.args.slice(1),
 
   execute: get(program, 'execute', ''),
   executeDelay: get(program, 'executeDelay', 250),

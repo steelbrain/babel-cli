@@ -78,7 +78,7 @@ async function main(config) {
     }
     spawnedProcess = childProcess.spawn(
       process.execPath,
-      config.nodeFlags.concat([config.execute]),
+      config.nodeFlags.concat([config.execute]).concat(config.programFlags),
       {
         stdio: 'inherit',
       },
