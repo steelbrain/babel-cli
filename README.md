@@ -35,6 +35,9 @@ Options:
   --execute-delay <delay>             Delay in ms to in between restarts of executed file
   --typescript                        Enables typescript support by processing .ts and .tsx files
   -h, --help                          output usage information
+
+Arguments after -- will be passed as-are to the program specified in -x flag
+Supported NodeJS CLI flags:  --debug-port, --inspect-port, --inspect, --inspect-brk, --inspect-publish-uid
 ```
 
 ### Examples
