@@ -1,3 +1,8 @@
+### 2.1.0
+
+- Add support for some NodeJS flags: --debug-port, --inspect-port, --inspect, --inspect-brk, --inspect-publish-uid
+- Add support for pass-through of paramters with `--`, eg: `sb-babel-cli src -o lib -x lib/index.js -- --enable-debug --program-arg=value
+
 ### 2.0.0
 
 - Require at least Node v8
