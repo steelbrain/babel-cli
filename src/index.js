@@ -74,7 +74,7 @@ async function main(config) {
     }
     log(chalk.green(`starting 'node ${config.execute}'`))
     if (spawnedProcess) {
-      spawnedProcess.kill()
+      spawnedProcess.kill('SIGHUP')
     }
     spawnedProcess = childProcess.spawn(
       process.execPath,

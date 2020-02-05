@@ -1,3 +1,7 @@
+### 3.0.0
+
+- BREAKING: In watcher mode with `-x`, when respawning `process.exit()` is now called with `SIGHUP` signal. This may affect how your program behaves.
+
 ### 2.1.0
 
 - Add support for some NodeJS flags: --debug-port, --inspect-port, --inspect, --inspect-brk, --inspect-publish-uid
