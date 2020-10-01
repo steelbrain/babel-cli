@@ -42,7 +42,7 @@ async function main(config) {
 
     const transformed = await babelTransformFile(sourceFile, {
       root: config.root,
-      sourceMaps: config.sourceMaps,
+      sourceMaps: config.sourceMaps === 'inline' ? 'inline' : Boolean(config.sourceMaps),
     })
     await makeDir(path.dirname(outputFile))
 
@@ -51,7 +51,7 @@ async function main(config) {
     await Promise.all([
       fs.writeFile(
         outputFile,
-        config.sourceMaps
+        config.sourceMaps && config.sourceMaps !== 'inline'
           ? `${transformed.code}\n\n//# sourceMappingURL=${path.basename(mapFile)}`
           : transformed.code,
         {

@@ -25,7 +25,7 @@ program
     'Write .flow files that are symlinked to source files. Helps with monorepos in some cases',
   )
   .option(
-    '--source-maps',
+    '--source-maps <option>',
     'Write .map files so that code can be executed and original source filenames and line numbers can be used',
   )
   .option('--disable-cache', 'Force recompile all files ignoring cache')
