@@ -42,11 +42,25 @@ async function main(config) {
 
     const transformed = await babelTransformFile(sourceFile, {
       root: config.root,
+      sourceMaps: config.sourceMaps,
     })
     await makeDir(path.dirname(outputFile))
-    await fs.writeFile(outputFile, transformed.code, {
-      mode: stats.mode,
-    })
+
+    const mapFile = outputFile.replace(/\..*$/, '.js.map')
+
+    await Promise.all([
+      fs.writeFile(
+        outputFile,
+        config.sourceMaps
+          ? `${transformed.code}\n\n//# sourceMappingURL=${path.basename(mapFile)}`
+          : transformed.code,
+        {
+          mode: stats.mode,
+        },
+      ),
+      // Write source maps if option is given.
+      config.sourceMaps ? fs.writeFile(mapFile, JSON.stringify(transformed.map)) : null,
+    ])
     log(sourceFile, '->', outputFile)
     if (config.writeFlowSources) {
       const flowOutputFile = `${outputFile}.flow`
