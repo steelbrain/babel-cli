@@ -46,7 +46,7 @@ async function main(config) {
     })
     await makeDir(path.dirname(outputFile))
 
-    const mapFile = outputFile.replace(/\..*$/, '.js.map')
+    const mapFile = `${outputFile}.js.map`
 
     await Promise.all([
       fs.writeFile(
