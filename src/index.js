@@ -59,7 +59,9 @@ async function main(config) {
         },
       ),
       // Write source maps if option is given.
-      config.sourceMaps ? fs.writeFile(mapFile, JSON.stringify(transformed.map)) : null,
+      config.sourceMaps && config.sourceMaps !== 'inline'
+        ? fs.writeFile(mapFile, JSON.stringify(transformed.map))
+        : null,
     ])
     log(sourceFile, '->', outputFile)
     if (config.writeFlowSources) {
@@ -115,7 +117,10 @@ async function main(config) {
     outputDirectory: config.outputDirectory,
     ignored: config.ignored,
     keepExtraFiles: config.keepExtraFiles,
-    filesToKeep: input => input.concat(config.writeFlowSources ? input.map(i => `${i}.flow`) : []),
+    filesToKeep: input =>
+      input
+        .concat(config.writeFlowSources ? input.map(i => `${i}.flow`) : [])
+        .concat(config.sourceMaps ? input.map(i => `${i}.map`) : []),
     async callback(sourceFile, outputFile, stats) {
       const cachedTimestamp = await timestampCache.get(getSha1(sourceFile)).value()
       if (cachedTimestamp === stats.mtime.getTime()) {
