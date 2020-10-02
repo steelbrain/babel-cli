@@ -46,7 +46,7 @@ async function main(config) {
     })
     await makeDir(path.dirname(outputFile))
 
-    const mapFile = `${outputFile}.js.map`
+    const mapFile = `${outputFile}.map`
 
     await Promise.all([
       fs.writeFile(
