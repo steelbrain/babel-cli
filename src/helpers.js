@@ -14,6 +14,7 @@ export const SUPPORTED_FLAGS = [
   '--inspect',
   '--inspect-brk',
   '--inspect-publish-uid',
+  '--enable-source-maps',
 ]
 export class CLIError extends Error {}
 

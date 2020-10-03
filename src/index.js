@@ -42,11 +42,27 @@ async function main(config) {
 
     const transformed = await babelTransformFile(sourceFile, {
       root: config.root,
+      sourceMaps: config.sourceMaps === 'inline' ? 'inline' : Boolean(config.sourceMaps),
     })
     await makeDir(path.dirname(outputFile))
-    await fs.writeFile(outputFile, transformed.code, {
-      mode: stats.mode,
-    })
+
+    const mapFile = `${outputFile}.map`
+
+    await Promise.all([
+      fs.writeFile(
+        outputFile,
+        config.sourceMaps && config.sourceMaps !== 'inline'
+          ? `${transformed.code}\n\n//# sourceMappingURL=${path.basename(mapFile)}`
+          : transformed.code,
+        {
+          mode: stats.mode,
+        },
+      ),
+      // Write source maps if option is given.
+      config.sourceMaps && config.sourceMaps !== 'inline'
+        ? fs.writeFile(mapFile, JSON.stringify(transformed.map))
+        : null,
+    ])
     log(sourceFile, '->', outputFile)
     if (config.writeFlowSources) {
       const flowOutputFile = `${outputFile}.flow`
@@ -101,7 +117,10 @@ async function main(config) {
     outputDirectory: config.outputDirectory,
     ignored: config.ignored,
     keepExtraFiles: config.keepExtraFiles,
-    filesToKeep: input => input.concat(config.writeFlowSources ? input.map(i => `${i}.flow`) : []),
+    filesToKeep: input =>
+      input
+        .concat(config.writeFlowSources ? input.map(i => `${i}.flow`) : [])
+        .concat(config.sourceMaps ? input.map(i => `${i}.map`) : []),
     async callback(sourceFile, outputFile, stats) {
       const cachedTimestamp = await timestampCache.get(getSha1(sourceFile)).value()
       if (cachedTimestamp === stats.mtime.getTime()) {

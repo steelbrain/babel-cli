@@ -27,7 +27,9 @@ Options:
   -V, --version                       output the version number
   -w, --watch                         Watch files for changes
   --ignored <list>                    Ignored files and directories that match the given globs
-  --write-flow-sources                Write .flow files that are symlinked to source files. Helps with monorepos in some cases
+  --write-flow-sources                Write .flow files that are symlinked to source files. Helps 
+                                      with monorepos in some cases
+  --source-maps                       Outputs source maps (Node 12+)
   --disable-cache                     Force recompile all files ignoring cache
   --keep-extra-files                  Do NOT delete extra files in the output directory
   -o, --output-directory <directory>  Output directory to write transpiled files to
