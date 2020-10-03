@@ -14,7 +14,7 @@ jobs:
             - packages-master
       - run:
           name: Packager Version
-          command: npm --version
+          command: npm version
       - run:
           name: Install Dependencies
           command: yarn
