@@ -21,7 +21,7 @@ async function main(config) {
   const timestampCache = await getCacheDB(resolvedSourceDirectory, !config.disableCache)
   const babelTransformFile = getBabelTransformFile(resolvedSourceDirectory)
   const transformationQueue = new PQueue({ concurrency: os.cpus().length })
-  const getOutputFilePath = filePath => {
+  const getOutputFilePath = (filePath) => {
     const extName = path.extname(filePath)
     if (extName.length) {
       return `${filePath.slice(0, -1 * path.extname(filePath).length)}.js`
@@ -101,7 +101,7 @@ async function main(config) {
     )
   }
 
-  const debounceExecute = debounce(function() {
+  const debounceExecute = debounce(function () {
     try {
       execute()
     } catch (error) {
@@ -117,10 +117,10 @@ async function main(config) {
     outputDirectory: config.outputDirectory,
     ignored: config.ignored,
     keepExtraFiles: config.keepExtraFiles,
-    filesToKeep: input =>
+    filesToKeep: (input) =>
       input
-        .concat(config.writeFlowSources ? input.map(i => `${i}.flow`) : [])
-        .concat(config.sourceMaps ? input.map(i => `${i}.map`) : []),
+        .concat(config.writeFlowSources ? input.map((i) => `${i}.flow`) : [])
+        .concat(config.sourceMaps ? input.map((i) => `${i}.map`) : []),
     async callback(sourceFile, outputFile, stats) {
       const cachedTimestamp = await timestampCache.get(getSha1(sourceFile)).value()
       if (cachedTimestamp === stats.mtime.getTime()) {
@@ -141,7 +141,7 @@ async function main(config) {
     if (typeof process.stdin.unref === 'function') {
       process.stdin.unref()
     }
-    process.stdin.on('data', function(chunk) {
+    process.stdin.on('data', function (chunk) {
       if (chunk.toString().trim() === 'rs') {
         debounceExecute()
       }
@@ -153,7 +153,7 @@ async function main(config) {
     alwaysStat: true,
     ignoreInitial: true,
   })
-  watcher.on('add', function(givenFileName, stats) {
+  watcher.on('add', function (givenFileName, stats) {
     const fileName = path.relative(resolvedSourceDirectory, givenFileName)
     const sourceFile = path.join(config.sourceDirectory, fileName)
     const outputFile = path.join(config.outputDirectory, fileName)
@@ -166,7 +166,7 @@ async function main(config) {
         }
       })
   })
-  watcher.on('change', function(givenFileName, stats) {
+  watcher.on('change', function (givenFileName, stats) {
     const fileName = path.relative(resolvedSourceDirectory, givenFileName)
     const sourceFile = path.join(config.sourceDirectory, fileName)
     const outputFile = path.join(config.outputDirectory, fileName)
@@ -179,10 +179,10 @@ async function main(config) {
         }
       })
   })
-  watcher.on('unlink', function(givenFileName) {
+  watcher.on('unlink', function (givenFileName) {
     const fileName = path.relative(resolvedSourceDirectory, givenFileName)
     const outputFile = path.join(config.outputDirectory, fileName)
-    fs.unlink(outputFile).catch(function() {
+    fs.unlink(outputFile).catch(function () {
       /* No Op */
     })
   })

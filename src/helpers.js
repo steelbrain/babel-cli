@@ -64,7 +64,7 @@ export function getBabelTransformFile(projectPath) {
     if (!resolved) {
       throw new CLIError('Unable to find @babel/core in your project')
     }
-    // eslint-disable-next-line global-require,import/no-dynamic-require
+    // eslint-disable-next-line global-require,import/no-dynamic-require,@typescript-eslint/no-var-requires
     const babelCore = require(resolved)
     transformFileCached = pify(babelCore.transformFile)
   }

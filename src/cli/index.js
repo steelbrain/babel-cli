@@ -13,10 +13,10 @@ program
   .usage('[options] <source directory>')
   .option('-w, --watch', 'Watch files for changes')
   .option('--root <directory>', 'Root directory for babel. This is where presets are resolved from')
-  .option('--ignored <list>', 'Ignored files and directories that match the given globs', value =>
+  .option('--ignored <list>', 'Ignored files and directories that match the given globs', (value) =>
     value
       .split(',')
-      .map(item => item.trim())
+      .map((item) => item.trim())
       .filter(Boolean),
   )
   .option('--ignored-for-restart <list>', 'These files are transpiled, but do not cause restart')
@@ -35,7 +35,7 @@ program
   .option(
     '--execute-delay <delay>',
     'Delay in ms to in between restarts of executed file (defaults to 1000ms)',
-    value => parseInt(value, 10) || 1000,
+    (value) => parseInt(value, 10) || 1000,
   )
   .option('--typescript', 'Enables typescript support by processing .ts and .tsx files')
   .on('--help', () => {
@@ -55,7 +55,7 @@ if (typeof program.outputDirectory === 'undefined') {
 }
 
 const nodeFlags = []
-SUPPORTED_FLAGS.forEach(item => {
+SUPPORTED_FLAGS.forEach((item) => {
   const flagIndex = program.rawArgs.indexOf(item)
   if (flagIndex !== -1) {
     let flagValue = program.rawArgs[flagIndex + 1] || true
@@ -105,7 +105,7 @@ if (!config.watch && config.execute) {
   process.exit(1)
 }
 
-main(config).catch(error => {
+main(config).catch((error) => {
   logError(error)
   process.exit(1)
 })
