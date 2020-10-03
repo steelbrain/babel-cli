@@ -51,9 +51,10 @@ async function iterate({
       return
     }
     if (
-      anymatch(ignored, fileName) ||
-      anymatch(ignored, filePath) ||
-      anymatch(ignored, path.relative(rootDirectory, filePath))
+      ignored &&
+      (anymatch(ignored, fileName) ||
+        anymatch(ignored, filePath) ||
+        anymatch(ignored, path.relative(rootDirectory, filePath)))
     ) {
       // NOTE: We ignore ignored files
       return

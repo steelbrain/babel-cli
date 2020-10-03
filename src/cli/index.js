@@ -13,13 +13,8 @@ program
   .usage('[options] <source directory>')
   .option('-w, --watch', 'Watch files for changes')
   .option('--root <directory>', 'Root directory for babel. This is where presets are resolved from')
-  .option('--ignored <list>', 'Ignored files and directories that match the given globs', (value) =>
-    value
-      .split(',')
-      .map((item) => item.trim())
-      .filter(Boolean),
-  )
-  .option('--ignored-for-restart <list>', 'These files are transpiled, but do not cause restart')
+  .option('--ignored <glob>', 'Ignored files and directories that match the given glob')
+  .option('--ignored-for-restart <glob>', 'These files are transpiled, but do not cause restart')
   .option('--source-maps [true|false|inline]', 'Generate source maps for transpiled files')
   .option('--reset-cache', 'Retranspile all files ignoring cache')
   .option('--keep-extra-files', 'Do NOT delete extra files in the output directory')
@@ -75,7 +70,7 @@ SUPPORTED_FLAGS.forEach((item) => {
 const config = {
   root: get(program, 'root', process.cwd()),
   watch: get(program, 'watch', false),
-  ignored: get(program, 'ignored', []),
+  ignored: get(program, 'ignored', ''),
   ignoredForRestart: get(program, 'ignoredForRestart', null),
   resetCache: get(program, 'resetCache', false),
   keepExtraFiles: get(program, 'keepExtraFiles', false),
