@@ -20,10 +20,6 @@ program
       .filter(Boolean),
   )
   .option('--ignored-for-restart <list>', 'These files are transpiled, but do not cause restart')
-  .option(
-    '--write-flow-sources',
-    'Write .flow files that are symlinked to source files. Helps with monorepos in some cases',
-  )
   .option('--source-maps [true|false|inline]', 'Generate source maps for transpiled files')
   .option('--disable-cache', 'Force retranspile all files ignoring cache')
   .option('--keep-extra-files', 'Do NOT delete extra files in the output directory')
@@ -82,7 +78,6 @@ const config = {
   ignored: get(program, 'ignored', []),
   ignoredForRestart: get(program, 'ignoredForRestart', null),
   disableCache: get(program, 'disableCache', false),
-  writeFlowSources: get(program, 'writeFlowSources', false),
   keepExtraFiles: get(program, 'keepExtraFiles', false),
   sourceMaps: get(program, 'sourceMaps', false),
   sourceDirectory: program.args[0],

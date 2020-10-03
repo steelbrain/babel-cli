@@ -64,20 +64,6 @@ async function main(config) {
         : null,
     ])
     log(sourceFile, '->', outputFile)
-    if (config.writeFlowSources) {
-      const flowOutputFile = `${outputFile}.flow`
-      try {
-        await fs.unlink(flowOutputFile)
-      } catch (_) {
-        /* No Op */
-      }
-      try {
-        await fs.symlink(path.resolve(sourceFile), flowOutputFile)
-        log(sourceFile, '->', flowOutputFile)
-      } catch (error) {
-        /* No Op */
-      }
-    }
     timestampCache.set(getSha1(sourceFile), stats.mtime.getTime()).write()
   }
 
@@ -117,10 +103,7 @@ async function main(config) {
     outputDirectory: config.outputDirectory,
     ignored: config.ignored,
     keepExtraFiles: config.keepExtraFiles,
-    filesToKeep: (input) =>
-      input
-        .concat(config.writeFlowSources ? input.map((i) => `${i}.flow`) : [])
-        .concat(config.sourceMaps ? input.map((i) => `${i}.map`) : []),
+    filesToKeep: (input) => input.concat(config.sourceMaps ? input.map((i) => `${i}.map`) : []),
     async callback(sourceFile, outputFile, stats) {
       const cachedTimestamp = await timestampCache.get(getSha1(sourceFile)).value()
       if (cachedTimestamp === stats.mtime.getTime()) {
