@@ -7,29 +7,25 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          name: Restore NPM Package Cache
+          name: Restore Packages Cache
           keys:
-            - npm-packages-{{ .Branch }}-{{ checksum "package-lock.json" }}
-            - npm-packages-{{ .Branch }}
-            - npm-packages-master
-            - npm-packages-
+            - packages-{{ .Branch }}-{{ checksum "yarn.json" }}
+            - packages-{{ .Branch }}
+            - packages-master
       - run:
           name: Packager Version
           command: npm --version
       - run:
           name: Install Dependencies
-          command: npm install
+          command: yarn
       - save_cache:
-          name: Save NPM Package Cache
-          key: npm-packages-{{ .Branch }}-{{ checksum "package-lock.json" }}
+          name: Save Packages Cache
+          key: packages-{{ .Branch }}-{{ checksum "yarn.json" }}
           paths:
             - node_modules/
       - run:
-          name: Compile sources
-          command: npm run prepare
-      - run:
           name: Lint sources
-          command: npm run lint
+          command: yarn lint
 
 workflows:
   version: 2

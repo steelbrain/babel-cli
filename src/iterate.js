@@ -39,11 +39,11 @@ async function iterate({
   if (!keepExtraFiles) {
     const whitelist = filesToKeep(contents).map(getOutputFilePath)
     const filesToDelete = outputContents
-      .filter(item => !whitelist.includes(item))
-      .map(item => path.resolve(outputDirectory, item))
-    await Promise.all(filesToDelete.map(item => del(item)))
+      .filter((item) => !whitelist.includes(item))
+      .map((item) => path.resolve(outputDirectory, item))
+    await Promise.all(filesToDelete.map((item) => del(item)))
   }
-  await pMap(contents, async function(fileName) {
+  await pMap(contents, async function (fileName) {
     const filePath = path.join(sourceDirectory, fileName)
     const stat = await fs.lstat(filePath)
     if (stat.isSymbolicLink()) {
