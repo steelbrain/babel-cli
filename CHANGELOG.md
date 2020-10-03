@@ -1,3 +1,7 @@
+### 3.1.0
+
+- Add support for `--source-maps` in Babel CLI args and `--enable-source-maps` in Node.js passthrough args
+
 ### 3.0.0
 
 - BREAKING: In watcher mode with `-x`, when respawning `process.exit()` is now called with `SIGHUP` signal. This may affect how your program behaves.
