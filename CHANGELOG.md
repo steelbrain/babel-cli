@@ -1,3 +1,8 @@
+### 4.0.0
+
+- Remove `--write-flow-sources`
+- Rename `--disable-cache` to `--reset-cache`
+
 ### 3.1.0
 
 - Add support for `--source-maps` in Babel CLI args and `--enable-source-maps` in Node.js passthrough args

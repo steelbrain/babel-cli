@@ -18,7 +18,7 @@ async function main(config) {
   const resolvedSourceDirectory = path.resolve(config.root, config.sourceDirectory)
 
   const extensions = config.typescript ? ['.ts', '.tsx', '.js'] : ['.js']
-  const timestampCache = await getCacheDB(resolvedSourceDirectory, !config.disableCache)
+  const timestampCache = await getCacheDB(resolvedSourceDirectory, !config.resetCache)
   const babelTransformFile = getBabelTransformFile(resolvedSourceDirectory)
   const transformationQueue = new PQueue({ concurrency: os.cpus().length })
   const getOutputFilePath = (filePath) => {

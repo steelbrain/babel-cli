@@ -21,7 +21,7 @@ program
   )
   .option('--ignored-for-restart <list>', 'These files are transpiled, but do not cause restart')
   .option('--source-maps [true|false|inline]', 'Generate source maps for transpiled files')
-  .option('--disable-cache', 'Force retranspile all files ignoring cache')
+  .option('--reset-cache', 'Retranspile all files ignoring cache')
   .option('--keep-extra-files', 'Do NOT delete extra files in the output directory')
   .option('-o, --output-directory <directory>', 'Output directory to write transpiled files to')
   .option(
@@ -77,7 +77,7 @@ const config = {
   watch: get(program, 'watch', false),
   ignored: get(program, 'ignored', []),
   ignoredForRestart: get(program, 'ignoredForRestart', null),
-  disableCache: get(program, 'disableCache', false),
+  resetCache: get(program, 'resetCache', false),
   keepExtraFiles: get(program, 'keepExtraFiles', false),
   sourceMaps: get(program, 'sourceMaps', false),
   sourceDirectory: program.args[0],
