@@ -24,7 +24,7 @@ program
     '--write-flow-sources',
     'Write .flow files that are symlinked to source files. Helps with monorepos in some cases',
   )
-  .option('--source-maps <true|false|inline>', 'Generate source maps for transpiled files')
+  .option('--source-maps [true|false|inline]', 'Generate source maps for transpiled files')
   .option('--disable-cache', 'Force retranspile all files ignoring cache')
   .option('--keep-extra-files', 'Do NOT delete extra files in the output directory')
   .option('-o, --output-directory <directory>', 'Output directory to write transpiled files to')
