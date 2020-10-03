@@ -19,16 +19,13 @@ program
       .map(item => item.trim())
       .filter(Boolean),
   )
-  .option('--ignored-for-restart <list>', 'These files are compiled, but do not cause restart')
+  .option('--ignored-for-restart <list>', 'These files are transpiled, but do not cause restart')
   .option(
     '--write-flow-sources',
     'Write .flow files that are symlinked to source files. Helps with monorepos in some cases',
   )
-  .option(
-    '--source-maps <option>',
-    'Write .map files so that code can be executed and original source filenames and line numbers can be used',
-  )
-  .option('--disable-cache', 'Force recompile all files ignoring cache')
+  .option('--source-maps <true|false|inline>', 'Generate source maps for transpiled files')
+  .option('--disable-cache', 'Force retranspile all files ignoring cache')
   .option('--keep-extra-files', 'Do NOT delete extra files in the output directory')
   .option('-o, --output-directory <directory>', 'Output directory to write transpiled files to')
   .option(
@@ -97,6 +94,10 @@ const config = {
 
   execute: get(program, 'execute', ''),
   executeDelay: get(program, 'executeDelay', 250),
+}
+
+if (config.sourceMaps !== 'inline' && typeof config.sourceMaps === 'string') {
+  config.sourceMaps = config.sourceMaps === 'true'
 }
 
 if (!config.watch && config.execute) {
