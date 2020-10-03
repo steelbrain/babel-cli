@@ -25,7 +25,7 @@ program
   )
   .option(
     '--execute-delay <delay>',
-    'Delay in ms to in between restarts of executed file (defaults to 1000ms)',
+    'Delay in ms in between restarts of executed file (defaults to 1000ms)',
     (value) => parseInt(value, 10) || 1000,
   )
   .option('--typescript', 'Enables typescript support by processing .ts and .tsx files')
@@ -33,6 +33,7 @@ program
     console.log('\nArguments after -- will be passed as-are to the program specified in -x flag')
     console.log('Supported NodeJS CLI flags: ', SUPPORTED_FLAGS.join(', '))
   })
+  .allowUnknownOption()
   .parse(process.argv)
 
 if (program.args.length < 1) {

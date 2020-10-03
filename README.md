@@ -34,7 +34,7 @@ Options:
   --keep-extra-files                  Do NOT delete extra files in the output directory
   -o, --output-directory <directory>  Output directory to write transpiled files to
   -x, --execute <entryFile>           Relative path of file to execute (only supported in watcher mode)
-  --execute-delay <delay>             Delay in ms to in between restarts of executed file (defaults to 1000ms)
+  --execute-delay <delay>             Delay in ms in between restarts of executed file (defaults to 1000ms)
   --typescript                        Enables typescript support by processing .ts and .tsx files
   -h, --help                          display help for command
 
