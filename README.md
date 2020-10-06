@@ -17,29 +17,29 @@ npx sb-babel-cli [options] <source directory>
 ### Usage
 
 ```
-Usage: sb-babel-cli [options] <source directory>
+Usage: cli [options] <source directory>
 
 A smarter babel-cli
 
-
 Options:
-
   -V, --version                       output the version number
   -w, --watch                         Watch files for changes
+  --root <directory>                  Root directory for babel. This is where presets are resolved from
   --ignored <list>                    Ignored files and directories that match the given globs
-  --write-flow-sources                Write .flow files that are symlinked to source files. Helps 
-                                      with monorepos in some cases
-  --source-maps                       Outputs source maps (Node 12+)
-  --disable-cache                     Force recompile all files ignoring cache
+  --ignored-for-restart <list>        These files are transpiled, but do not cause restart
+  --write-flow-sources                Write .flow files that are symlinked to source files. Helps with monorepos in
+                                      some cases
+  --source-maps [true|false|inline]   Generate source maps for transpiled files
+  --disable-cache                     Force retranspile all files ignoring cache
   --keep-extra-files                  Do NOT delete extra files in the output directory
   -o, --output-directory <directory>  Output directory to write transpiled files to
   -x, --execute <entryFile>           Relative path of file to execute (only supported in watcher mode)
-  --execute-delay <delay>             Delay in ms to in between restarts of executed file
+  --execute-delay <delay>             Delay in ms in between restarts of executed file (defaults to 1000ms)
   --typescript                        Enables typescript support by processing .ts and .tsx files
-  -h, --help                          output usage information
+  -h, --help                          display help for command
 
 Arguments after -- will be passed as-are to the program specified in -x flag
-Supported NodeJS CLI flags:  --debug-port, --inspect-port, --inspect, --inspect-brk, --inspect-publish-uid
+Supported NodeJS CLI flags:  --debug-port, --inspect-port, --inspect, --inspect-brk, --inspect-publish-uid, --enable-source-maps
 ```
 
 ### Examples

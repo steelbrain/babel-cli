@@ -13,19 +13,10 @@ program
   .usage('[options] <source directory>')
   .option('-w, --watch', 'Watch files for changes')
   .option('--root <directory>', 'Root directory for babel. This is where presets are resolved from')
-  .option('--ignored <list>', 'Ignored files and directories that match the given globs', (value) =>
-    value
-      .split(',')
-      .map((item) => item.trim())
-      .filter(Boolean),
-  )
-  .option('--ignored-for-restart <list>', 'These files are transpiled, but do not cause restart')
-  .option(
-    '--write-flow-sources',
-    'Write .flow files that are symlinked to source files. Helps with monorepos in some cases',
-  )
+  .option('--ignored <glob>', 'Ignored files and directories that match the given glob')
+  .option('--ignored-for-restart <glob>', 'These files are transpiled, but do not cause restart')
   .option('--source-maps [true|false|inline]', 'Generate source maps for transpiled files')
-  .option('--disable-cache', 'Force retranspile all files ignoring cache')
+  .option('--reset-cache', 'Retranspile all files ignoring cache')
   .option('--keep-extra-files', 'Do NOT delete extra files in the output directory')
   .option('-o, --output-directory <directory>', 'Output directory to write transpiled files to')
   .option(
@@ -34,7 +25,7 @@ program
   )
   .option(
     '--execute-delay <delay>',
-    'Delay in ms to in between restarts of executed file (defaults to 1000ms)',
+    'Delay in ms in between restarts of executed file (defaults to 1000ms)',
     (value) => parseInt(value, 10) || 1000,
   )
   .option('--typescript', 'Enables typescript support by processing .ts and .tsx files')
@@ -80,10 +71,9 @@ SUPPORTED_FLAGS.forEach((item) => {
 const config = {
   root: get(program, 'root', process.cwd()),
   watch: get(program, 'watch', false),
-  ignored: get(program, 'ignored', []),
+  ignored: get(program, 'ignored', ''),
   ignoredForRestart: get(program, 'ignoredForRestart', null),
-  disableCache: get(program, 'disableCache', false),
-  writeFlowSources: get(program, 'writeFlowSources', false),
+  resetCache: get(program, 'resetCache', false),
   keepExtraFiles: get(program, 'keepExtraFiles', false),
   sourceMaps: get(program, 'sourceMaps', false),
   sourceDirectory: program.args[0],

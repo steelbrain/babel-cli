@@ -1,3 +1,9 @@
+### 4.0.0
+
+- Remove `--write-flow-sources`
+- Rename `--disable-cache` to `--reset-cache`
+- `--ignored` now expects one glob, previous implementation could break globs that used commas
+
 ### 3.1.1
 
 - Hotfix for passthrough non-primary args
