@@ -4,6 +4,7 @@
   "bin": {
     "sb-babel-cli": "./lib/cli/index.js"
   },
+  "files": ["./src/**/*"],
   "author": "steelbrain",
   "readme": "./README.md",
   "version": "3.1.0",
