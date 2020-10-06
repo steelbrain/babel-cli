@@ -42,6 +42,7 @@ program
     console.log('\nArguments after -- will be passed as-are to the program specified in -x flag')
     console.log('Supported NodeJS CLI flags: ', SUPPORTED_FLAGS.join(', '))
   })
+  .allowUnknownOption()
   .parse(process.argv)
 
 if (program.args.length < 1) {
