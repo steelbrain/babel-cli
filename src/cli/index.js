@@ -4,8 +4,18 @@ import get from 'lodash/get'
 import program from 'commander'
 
 import main from '..'
-import { logError, SUPPORTED_FLAGS } from '../helpers'
+import { logError } from '../helpers'
 import manifest from '../../package.json'
+
+// [ arg for cli, name in commander, has arg ]
+const NODE_FLAGS = [
+  ['debug-port', 'debugPort', true],
+  ['inspect-port', 'inspectPort', true],
+  ['inspect', 'inspect', false],
+  ['inspect-brk', 'inspectBrk', false],
+  ['inspect-publish-uid', 'inspectPublishUid', true],
+  ['enable-source-maps', 'enableSourceMaps', false],
+]
 
 program
   .version(manifest.version)
@@ -30,11 +40,17 @@ program
   )
   .option('--typescript', 'Enables typescript support by processing .ts and .tsx files')
   .on('--help', () => {
-    console.log('\nArguments after -- will be passed as-are to the program specified in -x flag')
-    console.log('Supported NodeJS CLI flags: ', SUPPORTED_FLAGS.join(', '))
+    console.log('\nArguments after -- will be passed as-are to programs executed through -x')
   })
-  .allowUnknownOption()
-  .parse(process.argv)
+
+NODE_FLAGS.forEach(([nodeFlag, hasOption]) => {
+  program.option(
+    `--${nodeFlag}${hasOption ? ' <arg>' : ''}`,
+    'Passthrough flag for Node.js runtime for programs executed through -x',
+  )
+})
+
+program.parse(process.argv)
 
 if (program.args.length < 1) {
   program.outputHelp()
@@ -46,27 +62,9 @@ if (typeof program.outputDirectory === 'undefined') {
   process.exit(1)
 }
 
-const nodeFlags = []
-SUPPORTED_FLAGS.forEach((item) => {
-  const flagIndex = program.rawArgs.indexOf(item)
-  if (flagIndex !== -1) {
-    let flagValue = program.rawArgs[flagIndex + 1] || true
-    if (
-      typeof flagValue === 'undefined' ||
-      (typeof flagValue === 'string' &&
-        (flagValue.startsWith('-') || program.args.includes(flagValue)))
-    ) {
-      // ^ If it's got no value, or value is an option or value is present in args
-      // Then the value must not be own, so treat this as a boolean
-      flagValue = true
-    }
-    nodeFlags.push(item)
-    if (flagValue !== true) {
-      // ^ True values are unnecessary to specify
-      nodeFlags.push(flagValue)
-    }
-  }
-})
+const nodeFlags = NODE_FLAGS.filter((item) => program[item[1]] != null)
+  .map((item) => (item[2] ? [`--${item[0]}`, program[item[1]]] : [`--${item[0]}`]))
+  .flat()
 
 const config = {
   root: get(program, 'root', process.cwd()),

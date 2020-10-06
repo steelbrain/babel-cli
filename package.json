@@ -21,7 +21,7 @@
     "clean": "rimraf lib",
     "prepare": "yarn build",
     "build": "yarn clean && babel src --out-dir lib",
-    "watch": "yarn build -- -w",
+    "watch": "yarn build -w",
     "lint": "(eslint . ) && (prettier --list-different src/*.js)"
   },
   "dependencies": {
