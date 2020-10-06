@@ -1,3 +1,7 @@
+### 3.1.2
+
+- Hotfix, fixes missing files from last release
+
 ### 3.1.1
 
 - Hotfix for passthrough non-primary args
