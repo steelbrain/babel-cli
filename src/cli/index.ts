@@ -8,7 +8,7 @@ import { logError } from '../helpers'
 import manifest from '../../package.json'
 
 // [ arg for cli, name in commander, has arg ]
-const NODE_FLAGS = [
+const NODE_FLAGS: [string, string, boolean][] = [
   ['debug-port', 'debugPort', true],
   ['inspect-port', 'inspectPort', true],
   ['inspect', 'inspect', false],
