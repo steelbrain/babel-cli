@@ -17,17 +17,13 @@ export function getSha1(contents) {
 }
 
 export async function getCacheDB(projectPath, loadState) {
-  const configPath = path.join(
-    os.homedir(),
-    '.sb-babel-cli',
-    `cache-timestamps-${getSha1(projectPath)}`,
-  )
+  const configPath = path.join(os.homedir(), '.sb-babel-cli', `cache-timestamps-${getSha1(projectPath)}`)
   await makeDir(path.dirname(configPath))
 
   const adapter = new AdapterFileAsync(configPath, {
     serialize: JSON.stringify,
   })
-  adapter.write = debounce(adapter.write, 1000)
+  adapter.write = debounce(adapter.write, 1000) as any
 
   const db = await low(adapter)
   if (!loadState) {

@@ -9,15 +9,14 @@ import anymatch from 'anymatch'
 import debounce from 'lodash/debounce'
 import childProcess from 'child_process'
 
-import manifest from '../package.json'
 import iterate from './iterate'
 import { getSha1, getCacheDB, getBabelTransformFile, logError } from './helpers'
+import { Config } from './types'
 
-async function main(config) {
+async function main(config: Config): Promise<void> {
   let spawnedProcess
-  const resolvedSourceDirectory = path.resolve(config.root, config.sourceDirectory)
+  const resolvedSourceDirectory = path.resolve(config.rootDirectory, config.sourceDirectory)
 
-  const extensions = config.typescript ? ['.ts', '.tsx', '.js'] : ['.js']
   const timestampCache = await getCacheDB(resolvedSourceDirectory, !config.resetCache)
   const babelTransformFile = getBabelTransformFile(resolvedSourceDirectory)
   const transformationQueue = new PQueue({ concurrency: os.cpus().length })
@@ -38,10 +37,10 @@ async function main(config) {
   }
 
   async function processFile(sourceFile, outputFile, stats) {
-    if (!extensions.includes(path.extname(sourceFile))) return
+    if (!config.extensions.includes(path.extname(sourceFile))) return
 
     const transformed = await babelTransformFile(sourceFile, {
-      root: config.root,
+      root: config.rootDirectory,
       sourceMaps: config.sourceMaps === 'inline' ? 'inline' : config.sourceMaps,
     })
     await makeDir(path.dirname(outputFile))
@@ -71,7 +70,6 @@ async function main(config) {
     if (!config.execute) return
 
     if (!spawnedProcess) {
-      log(chalk.yellow(manifest.version))
       log(chalk.yellow('to restart at any time, enter `rs`'))
     }
     log(chalk.green(`starting 'node ${config.execute}'`))
@@ -80,7 +78,7 @@ async function main(config) {
     }
     spawnedProcess = childProcess.spawn(
       process.execPath,
-      config.nodeFlags.concat([config.execute]).concat(config.programFlags),
+      config.nodeArgs.concat([config.execute]).concat(config.programArgs),
       {
         stdio: 'inherit',
       },
@@ -96,7 +94,7 @@ async function main(config) {
   }, config.executeDelay)
 
   await iterate({
-    extensions,
+    extensions: config.extensions,
     getOutputFilePath,
     rootDirectory: config.sourceDirectory,
     sourceDirectory: config.sourceDirectory,

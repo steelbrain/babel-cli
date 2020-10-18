@@ -43,7 +43,7 @@ async function iterate({
       .map((item) => path.resolve(outputDirectory, item))
     await Promise.all(filesToDelete.map((item) => del(item)))
   }
-  await pMap(contents, async function (fileName) {
+  await pMap(contents, async function (fileName: string) {
     const filePath = path.join(sourceDirectory, fileName)
     const stat = await fs.lstat(filePath)
     if (stat.isSymbolicLink()) {
