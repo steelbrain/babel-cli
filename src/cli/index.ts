@@ -7,7 +7,6 @@ import main from '..'
 import { logError } from '../helpers'
 import manifest from '../../package.json'
 
-// [ arg for cli, name in commander, has arg ]
 const NODE_FLAGS: [string, string, boolean][] = [
   ['debug-port', 'debugPort', true],
   ['inspect-port', 'inspectPort', true],
@@ -32,24 +31,19 @@ program
   .option('--reset-cache', 'Retranspile all files ignoring cache')
   .option('--keep-extra-files', 'Do NOT delete extra files in the output directory')
   .option('-o, --output-directory <directory>', 'Output directory to write transpiled files to')
-  .option(
-    '-x, --execute <entryFile>',
-    'Relative path of file to execute (only supported in watcher mode)',
-  )
+  .option('-x, --execute <entryFile>', 'Relative path of file to execute (only supported in watcher mode)')
   .option(
     '--execute-delay <delay>',
     'Delay in ms in between restarts of executed file (defaults to 1000ms)',
     (value) => parseInt(value, 10) || 1000,
   )
-  .option(
-    '-e <exts>, --extensions <exts>',
-    'Comma spearated extensions to process through the CLI (defaults to .js)',
-  )
+  .option('-e <exts>, --extensions <exts>', 'Comma spearated extensions to process through the CLI (defaults to .js)')
   .option('--no-load-config', 'Disables loading of "sb-config-file" from package.json (in --root)')
   .option('--print-config', 'Print the config being used (for debugging only)')
   .on('--help', () => {
     console.log('\nArguments after -- will be passed as-are to programs executed through -x')
   })
+  .combineFlagAndOptionalValue(true)
 
 NODE_FLAGS.forEach(([nodeFlag, hasOption]) => {
   program.option(
