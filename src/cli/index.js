@@ -22,7 +22,10 @@ program
   .description(manifest.description)
   .usage('[options] <source directory>')
   .option('-w, --watch', 'Watch files for changes')
-  .option('--root <directory>', 'Root directory for babel. This is where presets are resolved from')
+  .option(
+    '--root <directory>',
+    'Root directory for compilation; where presets and CLI config is resolved from (defaults to cwd)',
+  )
   .option('--ignored <glob>', 'Ignored files and directories that match the given glob')
   .option('--ignored-for-restart <glob>', 'These files are transpiled, but do not cause restart')
   .option('--source-maps [true|false|inline]', 'Generate source maps for transpiled files')
@@ -38,7 +41,12 @@ program
     'Delay in ms in between restarts of executed file (defaults to 1000ms)',
     (value) => parseInt(value, 10) || 1000,
   )
-  .option('--typescript', 'Enables typescript support by processing .ts and .tsx files')
+  .option(
+    '-e <exts>, --extensions <exts>',
+    'Comma spearated extensions to process through the CLI (defaults to .js)',
+  )
+  .option('--no-load-config', 'Disables loading of "sb-config-file" from package.json (in --root)')
+  .option('--print-config', 'Print the config being used (for debugging only)')
   .on('--help', () => {
     console.log('\nArguments after -- will be passed as-are to programs executed through -x')
   })
@@ -77,6 +85,7 @@ const config = {
   sourceDirectory: program.args[0],
   outputDirectory: program.outputDirectory,
   typescript: program.typescript,
+  // TODO: ^ --typescript has been removed
 
   nodeFlags,
   programFlags: program.args.slice(1),
