@@ -14,15 +14,15 @@ import { getSha1, getCacheDB, getBabelCore, logError, loadConfigFromRoot, posixi
 import { Config } from './types'
 
 async function main(cliConfig: Config): Promise<void> {
-  const localConfig = { ...cliConfig }
-  localConfig.sourceDirectory = path.resolve(cliConfig.rootDirectory, cliConfig.sourceDirectory)
-
-  const config = await loadConfigFromRoot(localConfig.rootDirectory, localConfig)
+  const config = await loadConfigFromRoot(cliConfig.rootDirectory, cliConfig)
+  const resolvedSourceDirectory = path.resolve(config.rootDirectory, config.sourceDirectory)
+  const resolvedOutputDirectory = path.resolve(config.rootDirectory, config.outputDirectory ?? '')
 
   if (config.printConfig) {
     console.log('CLI Config', JSON.stringify(config, null, 2))
-    console.log('Resolved Source Directory', localConfig.sourceDirectory)
     console.log('Resolved Config (with config merged from Manifest)', JSON.stringify(config, null, 2))
+    console.log('resolvedSourceDirectory', resolvedSourceDirectory)
+    console.log('resolvedOutputDirectory', resolvedOutputDirectory)
     process.exit(1)
   }
 
@@ -34,6 +34,9 @@ async function main(cliConfig: Config): Promise<void> {
     console.log('ERROR: You must specify output directory')
     process.exit(1)
   }
+
+  config.sourceDirectory = resolvedSourceDirectory
+  config.outputDirectory = resolvedOutputDirectory
 
   // Sort the longest extensions to the shortest. This will help with replace
   config.extensions.sort((a, b) => b.length - a.length)
@@ -86,7 +89,7 @@ async function main(cliConfig: Config): Promise<void> {
         ? fs.promises.writeFile(mapFile, JSON.stringify(transformed.map, null, 2))
         : null,
     ])
-    log(sourceFile, '->', outputFile)
+    log(path.relative(config.rootDirectory, sourceFile), '->', path.relative(config.rootDirectory, outputFile))
     timestampCache.set(getSha1(sourceFile), stats.mtime.getTime()).write()
   }
 
@@ -126,7 +129,7 @@ async function main(cliConfig: Config): Promise<void> {
       const cachedTimestamp = await timestampCache.get(getSha1(sourceFile)).value()
       if (cachedTimestamp === stats.mtime.getTime()) {
         if (!config.execute) {
-          log(sourceFile, 'is unchanged')
+          log(path.relative(config.rootDirectory, sourceFile), 'is unchanged')
         }
         return
       }
