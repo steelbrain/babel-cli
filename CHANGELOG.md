@@ -1,8 +1,27 @@
 ### 4.0.0
 
-- Remove `--write-flow-sources`
-- Rename `--disable-cache` to `--reset-cache`
-- `--ignored` now expects one glob, previous implementation could break globs that used commas
+- BREAKING: Remove `--write-flow-sources`
+- BREAKING: Rename `--disable-cache` to `--reset-cache`
+- BREAKING: `--ignored` now expects one glob, previous implementation could break globs that used commas
+- BREAKING: Added a `@babel/core` peer dependency
+- BREAKING: `process.exit()` on running programs will no longer be called with `SIGHUP` but with `SIGINT`
+  This fixes Windows compatibility and shouldn't have any noticable behavior except in most odd cases.
+- Added `-e, --extensions` to specify which extensions to process
+- Added `--no-load-config` to disable loading config from `package.json` from root
+- Added `--print-config` to print config for debugging purposes
+
+The CLI now allows definition configs in `package.json` so your CLI args can be simplified. The `package.json`
+(if it exists) is loaded from `--root` if specified, or cwd if not specified. It can have all the configurations
+that can be specified in CLI (but only long names, eg. no `"e"`, only `"execute"`). For example:
+
+```json5
+// package.json
+{
+  "name": "package",
+  // ...
+  "sb-babel-cli": {"extensions": [".js", ".ts", ".tsx"]}
+}
+```
 
 ### 3.1.1
 
@@ -14,7 +33,8 @@
 
 ### 3.0.0
 
-- BREAKING: In watcher mode with `-x`, when respawning `process.exit()` is now called with `SIGHUP` signal. This may affect how your program behaves.
+- BREAKING: In watcher mode with `-x`, when respawning `process.exit()` is now called with `SIGHUP` signal.
+This may affect how your program behaves.
 
 ### 2.1.0
 

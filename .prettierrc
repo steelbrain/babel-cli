@@ -1,8 +1,7 @@
 {
-  "printWidth": 100,
-  "trailingComma": "all",
-  "singleQuote": true,
   "semi": false,
-  "bracketSpacing": true,
-  "parser": "flow"
+  "printWidth": 125,
+  "singleQuote": true,
+  "trailingComma": "all",
+  "parser": "typescript"
 }
