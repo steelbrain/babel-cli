@@ -1,9 +1,9 @@
 export interface Config {
   // INTERNAL arg:
   specifiedArgs: string[]
+  // READONLY arg:
   sourceDirectory: string
   outputDirectory: string
-  // READONLY arg:
   rootDirectory: string
 
   watch: boolean
