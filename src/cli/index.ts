@@ -2,7 +2,6 @@
 
 import fs from 'fs'
 import path from 'path'
-import get from 'lodash/get'
 import program from 'commander'
 
 import main from '..'
