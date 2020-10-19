@@ -1,3 +1,8 @@
+### 4.1.0
+
+- Improve restart behavior - Restarts are no longer eager, and only occur when no further files are being changed
+  in an executeDelay period.
+
 ### 4.0.1
 
 - Fix line endings being `\r\n` instead of `\n` in compiled output, breaking direct bin invocation

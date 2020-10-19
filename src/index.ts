@@ -41,6 +41,8 @@ async function main(cliConfig: Config): Promise<void> {
   // Sort the longest extensions to the shortest. This will help with replace
   config.extensions.sort((a, b) => b.length - a.length)
 
+  let restartId = 0
+  let lastRestartId = 0
   let spawnedProcess: childProcess.ChildProcess | null = null
 
   const timestampCache = await getCacheDB(config.sourceDirectory, !config.resetCache)
@@ -52,6 +54,9 @@ async function main(cliConfig: Config): Promise<void> {
       return `${filePath.slice(0, -1 * foundExt.length)}.js`
     }
     return filePath
+  }
+  const incrementRestartId = () => {
+    restartId = (restartId + 1) % 1024
   }
 
   function log(...items: string[]) {
@@ -93,10 +98,14 @@ async function main(cliConfig: Config): Promise<void> {
     timestampCache.set(getSha1(sourceFile), stats.mtime.getTime()).write()
   }
 
-  function execute() {
+  const execute = debounce(function () {
     if (!config.execute) {
       return
     }
+    if (lastRestartId !== 0 && lastRestartId === restartId) {
+      return
+    }
+    lastRestartId = restartId
 
     if (spawnedProcess == null) {
       log(chalk.yellow('to restart at any time, enter `rs`'))
@@ -104,21 +113,18 @@ async function main(cliConfig: Config): Promise<void> {
     log(chalk.green(`starting 'node ${config.execute}'`))
     if (spawnedProcess != null) {
       spawnedProcess.kill('SIGINT')
+      spawnedProcess = null
     }
-    spawnedProcess = childProcess.spawn(
-      process.execPath,
-      config.nodeArgs.concat([config.execute]).concat(config.programArgs),
-      {
-        stdio: 'inherit',
-      },
-    )
-  }
-
-  const debounceExecute = debounce(function () {
     try {
-      execute()
-    } catch (error) {
-      logError(error)
+      spawnedProcess = childProcess.spawn(
+        process.execPath,
+        config.nodeArgs.concat([config.execute]).concat(config.programArgs),
+        {
+          stdio: 'inherit',
+        },
+      )
+    } catch (err) {
+      logError(err)
     }
   }, config.executeDelay)
 
@@ -147,7 +153,8 @@ async function main(cliConfig: Config): Promise<void> {
     }
     process.stdin.on('data', function (chunk) {
       if (chunk.toString().trim() === 'rs') {
-        debounceExecute()
+        incrementRestartId()
+        execute()
       }
     })
   }
@@ -166,7 +173,7 @@ async function main(cliConfig: Config): Promise<void> {
       .catch(logError)
       .then(() => {
         if (!config.ignoredForRestart || !anymatch(config.ignoredForRestart, posixifyPath(sourceFile))) {
-          debounceExecute()
+          incrementRestartId()
         }
       })
   })
@@ -179,7 +186,7 @@ async function main(cliConfig: Config): Promise<void> {
       .catch(logError)
       .then(() => {
         if (!config.ignoredForRestart || !anymatch(config.ignoredForRestart, posixifyPath(sourceFile))) {
-          debounceExecute()
+          incrementRestartId()
         }
       })
   })
@@ -191,8 +198,8 @@ async function main(cliConfig: Config): Promise<void> {
     })
   })
 
-  await transformationQueue.waitTillIdle()
-  debounceExecute()
+  transformationQueue.onIdle(execute)
+  execute()
 }
 
 export default main
