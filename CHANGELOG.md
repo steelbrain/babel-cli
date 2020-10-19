@@ -1,3 +1,7 @@
+### 4.0.1
+
+- Fix line endings being `\r\n` instead of `\n` in compiled output, breaking direct bin invocation
+
 ### 4.0.0
 
 - BREAKING: Remove `--write-flow-sources`
