@@ -1,6 +1,9 @@
 export interface Config {
+  // INTERNAL arg:
+  specifiedArgs: string[]
   sourceDirectory: string
   outputDirectory: string
+  // READONLY arg:
   rootDirectory: string
 
   watch: boolean
@@ -12,6 +15,7 @@ export interface Config {
   execute: string
   executeDelay: number
   extensions: string[]
+  // READONLY arg:
   loadConfig: boolean
   printConfig: boolean
   nodeArgs: string[]

@@ -4,6 +4,8 @@
 - BREAKING: Rename `--disable-cache` to `--reset-cache`
 - BREAKING: `--ignored` now expects one glob, previous implementation could break globs that used commas
 - BREAKING: Added a `@babel/core` peer dependency
+- BREAKING: `process.exit()` on running programs will no longer be called with `SIGHUP` but with `SIGINT`
+  This fixes Windows compatibility and shouldn't have any noticable behavior except in most odd cases.
 - Added `-e, --extensions` to specify which extensions to process
 - Added `--no-load-config` to disable loading config from `package.json` from root
 - Added `--print-config` to print config for debugging purposes

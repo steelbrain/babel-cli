@@ -33,16 +33,12 @@
     "lowdb": "^1.0.0",
     "make-dir": "^3.0.0",
     "p-map": "^4.0.0",
-    "p-queue": "^6.6.2",
-    "pify": "^5.0.0",
     "resolve-from": "^5.0.0",
-    "sb-fs": "^4.0.0"
+    "sb-promise-queue": "^2.1.0"
   },
-  "peerDependencies": {
-    "@babel/core": "^7.12.3"
-  },
+  "peerDependencies": {},
   "devDependencies": {
-    "@babel/core": "^7.12.3",
+    "@types/babel__core": "^7.1.10",
     "@types/lodash": "^4.14.162",
     "@types/lowdb": "^1.0.9",
     "@types/node": "^14.11.10",

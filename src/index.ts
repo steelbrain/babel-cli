@@ -1,34 +1,57 @@
 import os from 'os'
+import fs from 'fs'
 import path from 'path'
-import fs from 'sb-fs'
 import chalk from 'chalk'
-import PQueue from 'p-queue'
 import makeDir from 'make-dir'
 import chokidar from 'chokidar'
 import anymatch from 'anymatch'
 import debounce from 'lodash/debounce'
 import childProcess from 'child_process'
+import { PromiseQueue } from 'sb-promise-queue'
 
 import iterate from './iterate'
-import { getSha1, getCacheDB, getBabelTransformFile, logError } from './helpers'
+import { getSha1, getCacheDB, getBabelCore, logError, loadConfigFromRoot, posixifyPath } from './helpers'
 import { Config } from './types'
 
-async function main(config: Config): Promise<void> {
-  let spawnedProcess
-  const resolvedSourceDirectory = path.resolve(config.rootDirectory, config.sourceDirectory)
+async function main(cliConfig: Config): Promise<void> {
+  const localConfig = { ...cliConfig }
+  localConfig.sourceDirectory = path.resolve(cliConfig.rootDirectory, cliConfig.sourceDirectory)
 
-  const timestampCache = await getCacheDB(resolvedSourceDirectory, !config.resetCache)
-  const babelTransformFile = getBabelTransformFile(resolvedSourceDirectory)
-  const transformationQueue = new PQueue({ concurrency: os.cpus().length })
-  const getOutputFilePath = (filePath) => {
-    const extName = path.extname(filePath)
-    if (extName.length) {
-      return `${filePath.slice(0, -1 * path.extname(filePath).length)}.js`
+  const config = await loadConfigFromRoot(localConfig.rootDirectory, localConfig)
+
+  if (config.printConfig) {
+    console.log('CLI Config', JSON.stringify(config, null, 2))
+    console.log('Resolved Source Directory', localConfig.sourceDirectory)
+    console.log('Resolved Config (with config merged from Manifest)', JSON.stringify(config, null, 2))
+    process.exit(1)
+  }
+
+  if (!config.watch && config.execute) {
+    console.error('ERROR: --execute is not supported without --watch')
+    process.exit(1)
+  }
+  if (!config.outputDirectory) {
+    console.log('ERROR: You must specify output directory')
+    process.exit(1)
+  }
+
+  // Sort the longest extensions to the shortest. This will help with replace
+  config.extensions.sort((a, b) => b.length - a.length)
+
+  let spawnedProcess: childProcess.ChildProcess | null = null
+
+  const timestampCache = await getCacheDB(config.sourceDirectory, !config.resetCache)
+  const babelCore = getBabelCore(config.sourceDirectory)
+  const transformationQueue = new PromiseQueue({ concurrency: os.cpus().length })
+  const getOutputFilePath = (filePath: string) => {
+    const foundExt = config.extensions.find((ext) => filePath.endsWith(ext))
+    if (foundExt != null) {
+      return `${filePath.slice(0, -1 * foundExt.length)}.js`
     }
     return filePath
   }
 
-  function log(...items) {
+  function log(...items: string[]) {
     if (config.execute) {
       console.log(`${chalk.yellow('[sb-babel-cli]')}`, ...items)
     } else {
@@ -36,30 +59,31 @@ async function main(config: Config): Promise<void> {
     }
   }
 
-  async function processFile(sourceFile, outputFile, stats) {
+  async function processFile(sourceFile: string, outputFile: string, stats: fs.Stats) {
     if (!config.extensions.includes(path.extname(sourceFile))) return
 
-    const transformed = await babelTransformFile(sourceFile, {
+    const transformed = await babelCore.transformFileAsync(sourceFile, {
       root: config.rootDirectory,
       sourceMaps: config.sourceMaps === 'inline' ? 'inline' : config.sourceMaps,
     })
+    if (transformed == null || transformed.code == null) {
+      return
+    }
     await makeDir(path.dirname(outputFile))
 
     const mapFile = `${outputFile}.map`
+    let outputContents = transformed.code
+    if (config.sourceMaps === true) {
+      outputContents += `\n\n//# sourceMappingURL=${path.basename(mapFile)}`
+    }
 
     await Promise.all([
-      fs.writeFile(
-        outputFile,
-        config.sourceMaps && config.sourceMaps !== 'inline'
-          ? `${transformed.code}\n\n//# sourceMappingURL=${path.basename(mapFile)}`
-          : transformed.code,
-        {
-          mode: stats.mode,
-        },
-      ),
+      fs.promises.writeFile(outputFile, outputContents, {
+        mode: stats.mode,
+      }),
       // Write source maps if option is given.
       config.sourceMaps && config.sourceMaps !== 'inline'
-        ? fs.writeFile(mapFile, JSON.stringify(transformed.map, null, 2))
+        ? fs.promises.writeFile(mapFile, JSON.stringify(transformed.map, null, 2))
         : null,
     ])
     log(sourceFile, '->', outputFile)
@@ -67,14 +91,16 @@ async function main(config: Config): Promise<void> {
   }
 
   function execute() {
-    if (!config.execute) return
+    if (!config.execute) {
+      return
+    }
 
-    if (!spawnedProcess) {
+    if (spawnedProcess == null) {
       log(chalk.yellow('to restart at any time, enter `rs`'))
     }
     log(chalk.green(`starting 'node ${config.execute}'`))
-    if (spawnedProcess) {
-      spawnedProcess.kill('SIGHUP')
+    if (spawnedProcess != null) {
+      spawnedProcess.kill('SIGINT')
     }
     spawnedProcess = childProcess.spawn(
       process.execPath,
@@ -94,14 +120,8 @@ async function main(config: Config): Promise<void> {
   }, config.executeDelay)
 
   await iterate({
-    extensions: config.extensions,
+    config,
     getOutputFilePath,
-    rootDirectory: config.sourceDirectory,
-    sourceDirectory: config.sourceDirectory,
-    outputDirectory: config.outputDirectory,
-    ignored: config.ignored,
-    keepExtraFiles: config.keepExtraFiles,
-    filesToKeep: (input) => input.concat(config.sourceMaps ? input.map((i) => `${i}.map`) : []),
     async callback(sourceFile, outputFile, stats) {
       const cachedTimestamp = await timestampCache.get(getSha1(sourceFile)).value()
       if (cachedTimestamp === stats.mtime.getTime()) {
@@ -115,7 +135,7 @@ async function main(config: Config): Promise<void> {
   })
 
   if (!config.watch) {
-    await transformationQueue.onIdle()
+    await transformationQueue.waitTillIdle()
     return
   }
   if (config.execute && process.stdin) {
@@ -129,46 +149,46 @@ async function main(config: Config): Promise<void> {
     })
   }
 
-  const watcher = chokidar.watch(resolvedSourceDirectory, {
+  const watcher = chokidar.watch(config.sourceDirectory, {
     ignored: config.ignored,
     alwaysStat: true,
     ignoreInitial: true,
   })
-  watcher.on('add', function (givenFileName, stats) {
-    const fileName = path.relative(resolvedSourceDirectory, givenFileName)
+  watcher.on('add', function (givenFileName: string, stats: fs.Stats) {
+    const fileName = path.relative(config.sourceDirectory, givenFileName)
     const sourceFile = path.join(config.sourceDirectory, fileName)
     const outputFile = path.join(config.outputDirectory, fileName)
     transformationQueue
       .add(() => processFile(sourceFile, getOutputFilePath(outputFile), stats))
       .catch(logError)
       .then(() => {
-        if (!config.ignoredForRestart || !anymatch(config.ignoredForRestart, sourceFile)) {
+        if (!config.ignoredForRestart || !anymatch(config.ignoredForRestart, posixifyPath(sourceFile))) {
           debounceExecute()
         }
       })
   })
-  watcher.on('change', function (givenFileName, stats) {
-    const fileName = path.relative(resolvedSourceDirectory, givenFileName)
+  watcher.on('change', function (givenFileName: string, stats: fs.Stats) {
+    const fileName = path.relative(config.sourceDirectory, givenFileName)
     const sourceFile = path.join(config.sourceDirectory, fileName)
     const outputFile = path.join(config.outputDirectory, fileName)
     transformationQueue
       .add(() => processFile(sourceFile, getOutputFilePath(outputFile), stats))
       .catch(logError)
       .then(() => {
-        if (!config.ignoredForRestart || !anymatch(config.ignoredForRestart, sourceFile)) {
+        if (!config.ignoredForRestart || !anymatch(config.ignoredForRestart, posixifyPath(sourceFile))) {
           debounceExecute()
         }
       })
   })
-  watcher.on('unlink', function (givenFileName) {
-    const fileName = path.relative(resolvedSourceDirectory, givenFileName)
+  watcher.on('unlink', function (givenFileName: string) {
+    const fileName = path.relative(config.sourceDirectory, givenFileName)
     const outputFile = path.join(config.outputDirectory, fileName)
-    fs.unlink(outputFile).catch(function () {
+    fs.promises.unlink(outputFile).catch(function () {
       /* No Op */
     })
   })
 
-  await transformationQueue.onIdle()
+  await transformationQueue.waitTillIdle()
   debounceExecute()
 }
 

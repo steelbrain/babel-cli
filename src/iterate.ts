@@ -1,27 +1,28 @@
+import fs from 'fs'
 import del from 'del'
-import fs from 'sb-fs'
 import path from 'path'
 import pMap from 'p-map'
 import makeDir from 'make-dir'
 import anymatch from 'anymatch'
 
-async function iterate({
-  extensions,
-  getOutputFilePath,
-  rootDirectory,
-  sourceDirectory,
-  outputDirectory,
-  ignored,
-  keepExtraFiles,
-  filesToKeep,
-  callback,
-}) {
-  const contents = await fs.readdir(sourceDirectory)
+import { Config } from './types'
+import { posixifyPath } from './helpers'
 
-  let outputStats
+async function iterate({
+  config,
+  callback,
+  getOutputFilePath,
+}: {
+  config: Config
+  callback: (filePath: string, outputPath: string, stats: fs.Stats) => Promise<void>
+  getOutputFilePath: (arg: string) => string
+}): Promise<void> {
+  const contents = await fs.promises.readdir(config.sourceDirectory)
+
+  let outputStats: fs.Stats | null = null
   let outputDirectoryExists = false
   try {
-    outputStats = await fs.stat(outputDirectory)
+    outputStats = await fs.promises.stat(config.outputDirectory)
   } catch (_) {
     /* No Op */
   }
@@ -29,55 +30,61 @@ async function iterate({
     if (outputStats.isDirectory()) {
       outputDirectoryExists = true
     } else {
-      await del(outputDirectory)
+      await del(config.outputDirectory)
       outputStats = null
     }
   }
 
-  const outputContents = outputStats ? await fs.readdir(outputDirectory) : []
+  const outputContents = outputStats ? await fs.promises.readdir(config.outputDirectory) : []
 
-  if (!keepExtraFiles) {
-    const whitelist = filesToKeep(contents).map(getOutputFilePath)
+  if (!config.keepExtraFiles) {
+    let whitelist = contents.map(getOutputFilePath)
+    if (config.sourceMaps === true) {
+      whitelist = whitelist.concat(whitelist.map((item) => `${item}.map`))
+    }
+
     const filesToDelete = outputContents
       .filter((item) => !whitelist.includes(item))
-      .map((item) => path.resolve(outputDirectory, item))
+      .map((item) => path.resolve(config.outputDirectory, item))
     await Promise.all(filesToDelete.map((item) => del(item)))
   }
-  await pMap(contents, async function (fileName: string) {
-    const filePath = path.join(sourceDirectory, fileName)
-    const stat = await fs.lstat(filePath)
+  await pMap(contents, async function (itemName: string) {
+    const filePath = path.join(config.sourceDirectory, itemName)
+    const stat = await fs.promises.lstat(filePath)
     if (stat.isSymbolicLink()) {
       // NOTE: We ignore symlinks
       return
     }
     if (
-      ignored &&
-      (anymatch(ignored, fileName) ||
-        anymatch(ignored, filePath) ||
-        anymatch(ignored, path.relative(rootDirectory, filePath)))
+      config.ignored &&
+      (anymatch(config.ignored, itemName) ||
+        anymatch(config.ignored, posixifyPath(filePath)) ||
+        anymatch(config.ignored, posixifyPath(path.relative(config.rootDirectory, filePath))))
+      // TODO: Convert above to posix
     ) {
       // NOTE: We ignore ignored files
       return
     }
     if (stat.isFile()) {
-      if (!extensions.includes(path.extname(fileName))) return
+      const foundExt = config.extensions.find((ext) => itemName.endsWith(ext))
+
+      if (!foundExt) {
+        return
+      }
 
       if (!outputDirectoryExists) {
-        await makeDir(outputDirectory)
+        await makeDir(config.outputDirectory)
         outputDirectoryExists = true
       }
-      const outputFile = getOutputFilePath(path.join(outputDirectory, fileName))
+      const outputFile = getOutputFilePath(path.join(config.outputDirectory, itemName))
       await callback(filePath, outputFile, stat)
     } else if (stat.isDirectory()) {
       await iterate({
-        extensions,
+        config: {
+          ...config,
+          sourceDirectory: path.join(config.sourceDirectory, itemName),
+        },
         getOutputFilePath,
-        rootDirectory,
-        sourceDirectory: path.join(sourceDirectory, fileName),
-        outputDirectory: path.join(outputDirectory, fileName),
-        ignored,
-        keepExtraFiles,
-        filesToKeep,
         callback,
       })
     }

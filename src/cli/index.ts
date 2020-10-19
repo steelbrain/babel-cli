@@ -43,14 +43,11 @@ program
     'Delay in ms in between restarts of executed file (defaults to 1000ms)',
     (value) => parseInt(value, 10) || 1000,
   )
-  .option(
-    '-e <exts>, --extensions <exts>',
-    'Comma spearated extensions to process through the CLI (defaults to .js)',
-    (value) =>
-      value
-        .split(',')
-        .map((item) => item.trim())
-        .filter(Boolean),
+  .option('--extensions <exts>', 'Comma spearated extensions to process through the CLI (defaults to .js)', (value) =>
+    value
+      .split(',')
+      .map((item) => item.trim())
+      .filter(Boolean),
   )
   .option('--no-load-config', 'Disables loading of "sb-config-file" from package.json (in --root)')
   .option('--print-config', 'Print the config being used (for debugging only)')
@@ -60,7 +57,6 @@ program
   .combineFlagAndOptionalValue(true)
 
 NODE_ARGS.forEach(([nodeArg, , hasOption]) => {
-  console.log(nodeArg, hasOption)
   program.option(
     `--${nodeArg}${hasOption ? ' <arg>' : ''}`,
     'Passthrough arg for Node.js runtime for programs executed through -x',
@@ -78,32 +74,39 @@ const nodeArgs = NODE_ARGS.filter((item) => program[item[1]] != null)
   .map((item) => (item[2] ? [`--${item[0]}`, program[item[1]]] : [`--${item[0]}`]))
   .flat()
 
-const config: Config = {
-  sourceDirectory: program.args[0],
-  outputDirectory: program.outputDirectory,
-  rootDirectory: get(program, 'root', process.cwd()),
+const specifiedArgs: string[] = []
+function optionalGet<T>(obj: Record<string, any>, key: string, defaultValue: T): T {
+  if (obj[key] == null) {
+    return defaultValue
+  }
+  specifiedArgs.push(key)
+  return obj[key]
+}
 
-  watch: get(program, 'watch', false),
-  ignored: get(program, 'ignored', ''),
-  ignoredForRestart: get(program, 'ignoredForRestart', null),
-  sourceMaps: get(program, 'sourceMaps', false),
-  resetCache: get(program, 'resetCache', false),
-  keepExtraFiles: get(program, 'keepExtraFiles', false),
-  execute: get(program, 'execute', ''),
-  executeDelay: get(program, 'executeDelay', 250),
-  extensions: get(program, 'extensions', ['.js']),
-  loadConfig: get(program, 'loadConfig', true),
-  printConfig: get(program, 'printConfig', false),
+const configPartial: Omit<Config, 'specifiedArgs'> = {
+  sourceDirectory: program.args[0],
+  outputDirectory: optionalGet(program, 'outputDirectory', ''),
+  rootDirectory: optionalGet(program, 'root', process.cwd()),
+
+  watch: optionalGet(program, 'watch', false),
+  ignored: optionalGet(program, 'ignored', ''),
+  ignoredForRestart: optionalGet(program, 'ignoredForRestart', ''),
+  sourceMaps: optionalGet(program, 'sourceMaps', false),
+  resetCache: optionalGet(program, 'resetCache', false),
+  keepExtraFiles: optionalGet(program, 'keepExtraFiles', false),
+  execute: optionalGet(program, 'execute', ''),
+  executeDelay: optionalGet(program, 'executeDelay', 250),
+  extensions: optionalGet(program, 'extensions', ['.js']),
+  loadConfig: optionalGet(program, 'loadConfig', true),
+  printConfig: optionalGet(program, 'printConfig', false),
   nodeArgs,
   programArgs: program.args.slice(1),
 }
 
-if (!config.watch && config.execute) {
-  console.error('ERROR: --execute is not supported without --watch')
-  process.exit(1)
-}
-
-main(config).catch((error) => {
+main({
+  ...configPartial,
+  specifiedArgs,
+}).catch((error) => {
   logError(error)
   process.exit(1)
 })
