@@ -83,6 +83,7 @@ async function iterate({
         config: {
           ...config,
           sourceDirectory: path.join(config.sourceDirectory, itemName),
+          outputDirectory: path.join(config.outputDirectory, itemName),
         },
         getOutputFilePath,
         callback,
