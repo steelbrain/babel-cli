@@ -164,8 +164,10 @@ export async function loadConfigFromRoot(rootDirectory: string, config: Config):
       return config
     }
     const newConfig = { ...manifestConfig }
-    config.specifiedArgs.concat(EXCLUDED_CONFIG_KEYS).forEach((key) => {
-      newConfig[key] = config[key]
+    Object.keys(config).forEach((key: keyof Config) => {
+      if (config.specifiedArgs.includes(key) || EXCLUDED_CONFIG_KEYS.includes(key) || !(key in newConfig)) {
+        newConfig[key] = config[key]
+      }
     })
     return newConfig
   }
