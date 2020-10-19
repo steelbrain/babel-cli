@@ -56,7 +56,7 @@ In addition to specifying options in CLI, you can also add them to your `package
 with the key `sb-babel-cli`. Here are the supported options
 
 ```typescript
-export interface Config {
+interface Config {
   outputDirectory: string
 
   watch: boolean
