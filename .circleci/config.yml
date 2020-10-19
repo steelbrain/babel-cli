@@ -3,7 +3,7 @@ jobs:
   build_and_test:
     working_directory: ~/babel-cli
     docker:
-      - image: node:10-jessie
+      - image: node:12
     steps:
       - checkout
       - restore_cache:
