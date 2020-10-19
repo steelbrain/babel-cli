@@ -5,6 +5,7 @@ A smarter babel-cli. Supports caching and removing extra files from output direc
 Also supports running apps like nodemon, with `--execute/-x`, `--execute-delay`
 
 **Note:** For Babel 6, see [0.1.x branch](https://github.com/steelbrain/babel-cli/tree/0.1.x)
+
 **Note:** For v3, see [v3 branch](https://github.com/steelbrain/babel-cli/tree/v3)
 
 ### Installation
