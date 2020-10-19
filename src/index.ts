@@ -153,7 +153,7 @@ async function main(cliConfig: Config): Promise<void> {
   }
 
   const watcher = chokidar.watch(config.sourceDirectory, {
-    ignored: config.ignored,
+    ignored: config.ignored ? config.ignored : null,
     alwaysStat: true,
     ignoreInitial: true,
   })
