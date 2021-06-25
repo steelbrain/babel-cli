@@ -50,8 +50,8 @@ async function iterate({
   }
   await pMap(contents, async function (itemName: string) {
     const filePath = path.join(config.sourceDirectory, itemName)
-    const stat = await fs.promises.lstat(filePath)
-    if (stat.isSymbolicLink()) {
+    const stats = await fs.promises.lstat(filePath)
+    if (stats.isSymbolicLink()) {
       // NOTE: We ignore symlinks
       return
     }
@@ -65,7 +65,7 @@ async function iterate({
       // NOTE: We ignore ignored files
       return
     }
-    if (stat.isFile()) {
+    if (stats.isFile()) {
       const foundExt = config.extensions.find((ext) => itemName.endsWith(ext))
 
       if (!foundExt) {
@@ -77,8 +77,8 @@ async function iterate({
         outputDirectoryExists = true
       }
       const outputFile = getOutputFilePath(path.join(config.outputDirectory, itemName))
-      await callback(filePath, outputFile, stat)
-    } else if (stat.isDirectory()) {
+      await callback(filePath, outputFile, stats)
+    } else if (stats.isDirectory()) {
       await iterate({
         config: {
           ...config,

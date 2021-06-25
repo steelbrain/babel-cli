@@ -45,9 +45,10 @@ async function main(cliConfig: Config): Promise<void> {
   let lastRestartId = 0
   let spawnedProcess: childProcess.ChildProcess | null = null
 
-  const timestampCache = await getCacheDB(config.sourceDirectory, !config.resetCache)
   const babelCore = getBabelCore(config.sourceDirectory)
+  const contentHashCache = await getCacheDB(config.sourceDirectory, !config.resetCache)
   const transformationQueue = new PromiseQueue({ concurrency: os.cpus().length })
+
   const getOutputFilePath = (filePath: string) => {
     const foundExt = config.extensions.find((ext) => filePath.endsWith(ext))
     if (foundExt != null) {
@@ -55,6 +56,7 @@ async function main(cliConfig: Config): Promise<void> {
     }
     return filePath
   }
+
   const incrementRestartId = () => {
     restartId = (restartId + 1) % 1024
   }
@@ -67,16 +69,19 @@ async function main(cliConfig: Config): Promise<void> {
     }
   }
 
-  async function processFile(sourceFile: string, outputFile: string, stats: fs.Stats) {
+  async function processFile(sourceFile: string, outputFile: string, sourceFileContents: string, stats: fs.Stats) {
     if (!config.extensions.includes(path.extname(sourceFile))) return
 
-    const transformed = await babelCore.transformFileAsync(sourceFile, {
+    const transformed = await babelCore.transformAsync(sourceFileContents, {
       root: config.rootDirectory,
+      filename: sourceFile,
       sourceMaps: config.sourceMaps === 'inline' ? 'inline' : config.sourceMaps,
     })
+
     if (transformed == null || transformed.code == null) {
       return
     }
+
     await makeDir(path.dirname(outputFile))
 
     const mapFile = `${outputFile}.map`
@@ -95,7 +100,7 @@ async function main(cliConfig: Config): Promise<void> {
         : null,
     ])
     log(path.relative(config.rootDirectory, sourceFile), '->', path.relative(config.rootDirectory, outputFile))
-    timestampCache.set(getSha1(sourceFile), stats.mtime.getTime()).write()
+    contentHashCache.set(getSha1(sourceFile), getSha1(sourceFileContents)).write()
   }
 
   const execute = debounce(function () {
@@ -132,14 +137,15 @@ async function main(cliConfig: Config): Promise<void> {
     config,
     getOutputFilePath,
     async callback(sourceFile, outputFile, stats) {
-      const cachedTimestamp = await timestampCache.get(getSha1(sourceFile)).value()
-      if (cachedTimestamp === stats.mtime.getTime()) {
+      const cachedTimestamp = await contentHashCache.get(getSha1(sourceFile)).value()
+      const sourceFileContents = await fs.promises.readFile(sourceFile, 'utf8')
+      if (cachedTimestamp === getSha1(sourceFileContents)) {
         if (!config.execute) {
           log(path.relative(config.rootDirectory, sourceFile), 'is unchanged')
         }
         return
       }
-      transformationQueue.add(() => processFile(sourceFile, outputFile, stats)).catch(logError)
+      transformationQueue.add(() => processFile(sourceFile, outputFile, sourceFileContents, stats)).catch(logError)
     },
   })
 
@@ -169,7 +175,9 @@ async function main(cliConfig: Config): Promise<void> {
     const sourceFile = path.join(config.sourceDirectory, fileName)
     const outputFile = path.join(config.outputDirectory, fileName)
     transformationQueue
-      .add(() => processFile(sourceFile, getOutputFilePath(outputFile), stats))
+      .add(async () =>
+        processFile(sourceFile, getOutputFilePath(outputFile), await fs.promises.readFile(sourceFile, 'utf8'), stats),
+      )
       .catch(logError)
       .then(() => {
         if (!config.ignoredForRestart || !anymatch(config.ignoredForRestart, posixifyPath(sourceFile))) {
@@ -182,7 +190,9 @@ async function main(cliConfig: Config): Promise<void> {
     const sourceFile = path.join(config.sourceDirectory, fileName)
     const outputFile = path.join(config.outputDirectory, fileName)
     transformationQueue
-      .add(() => processFile(sourceFile, getOutputFilePath(outputFile), stats))
+      .add(async () =>
+        processFile(sourceFile, getOutputFilePath(outputFile), await fs.promises.readFile(sourceFile, 'utf8'), stats),
+      )
       .catch(logError)
       .then(() => {
         if (!config.ignoredForRestart || !anymatch(config.ignoredForRestart, posixifyPath(sourceFile))) {
