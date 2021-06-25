@@ -1,3 +1,7 @@
+### 5.0.0
+
+- CACHE BREAKING: Use content hash (SHA1) instead of timestamps for cache. This should give you cache persistence in CI environments.
+
 ### 4.1.0
 
 - Improve restart behavior - Restarts are no longer eager, and only occur when no further files are being changed
