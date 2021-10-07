@@ -74,6 +74,7 @@ interface Config {
   executeDelay: number
   extensions: string[]
   printConfig: boolean
+  silent: boolean
   nodeArgs: string[]
   programArgs: string[]
 }
