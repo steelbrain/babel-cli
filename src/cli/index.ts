@@ -33,10 +33,14 @@ program
   .option(
     '--ignored <glob>',
     'Ignored files and directories that match the given glob (You can specify --ignored <glob> multiple times)',
+    (value, previous) => previous.concat([value]),
+    [] as string[],
   )
   .option(
     '--ignored-for-restart <glob>',
     'These files are transpiled, but do not cause restart (You can specify --ignored-for-restart <glob> multiple times)',
+    (value, previous) => previous.concat([value]),
+    [] as string[],
   )
   .option('--source-maps [true|false|inline]', 'Generate source maps for transpiled files', (value) =>
     value !== 'inline' ? value === 'true' : 'inline',
@@ -99,8 +103,8 @@ const configPartial: Omit<Config, 'specifiedArgs'> = {
   cacheDirectory: optionalGet(program, 'cacheDirectory', os.homedir()),
 
   watch: optionalGet(program, 'watch', false),
-  ignored: [].concat(optionalGet(program, 'ignored', [])),
-  ignoredForRestart: [].concat(optionalGet(program, 'ignoredForRestart', [])),
+  ignored: optionalGet(program, 'ignored', []),
+  ignoredForRestart: optionalGet(program, 'ignoredForRestart', []),
   sourceMaps: optionalGet(program, 'sourceMaps', false),
   resetCache: optionalGet(program, 'resetCache', false),
   keepExtraFiles: optionalGet(program, 'keepExtraFiles', false),
