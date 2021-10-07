@@ -46,13 +46,14 @@ async function main(cliConfig: Config): Promise<void> {
   let spawnedProcess: childProcess.ChildProcess | null = null
 
   const babelCore = getBabelCore(config.sourceDirectory)
-  const contentHashCache = await getCacheDB(config.sourceDirectory, !config.resetCache)
+  const contentHash = `${config.sourceDirectory}-${config.outputFileExtension}`
+  const contentHashCache = await getCacheDB(contentHash, !config.resetCache, config.cacheDirectory)
   const transformationQueue = new PromiseQueue({ concurrency: os.cpus().length })
 
   const getOutputFilePath = (filePath: string) => {
     const foundExt = config.extensions.find((ext) => filePath.endsWith(ext))
     if (foundExt != null) {
-      return `${filePath.slice(0, -1 * foundExt.length)}.js`
+      return `${filePath.slice(0, -1 * foundExt.length)}${config.outputFileExtension}`
     }
     return filePath
   }
@@ -62,6 +63,9 @@ async function main(cliConfig: Config): Promise<void> {
   }
 
   function log(...items: string[]) {
+    if (config.silent) {
+      return
+    }
     if (config.execute) {
       console.log(`${chalk.yellow('[sb-babel-cli]')}`, ...items)
     } else {
@@ -139,7 +143,11 @@ async function main(cliConfig: Config): Promise<void> {
     async callback(sourceFile, outputFile, stats) {
       const cachedTimestamp = await contentHashCache.get(getSha1(sourceFile)).value()
       const sourceFileContents = await fs.promises.readFile(sourceFile, 'utf8')
-      if (cachedTimestamp === getSha1(sourceFileContents)) {
+      const outputFileExists = await fs.promises
+        .access(outputFile, fs.constants.F_OK)
+        .then(() => true)
+        .catch(() => false)
+      if (outputFileExists && cachedTimestamp === getSha1(sourceFileContents)) {
         if (!config.execute) {
           log(path.relative(config.rootDirectory, sourceFile), 'is unchanged')
         }

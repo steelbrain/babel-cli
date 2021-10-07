@@ -1,4 +1,3 @@
-import os from 'os'
 import fs from 'fs'
 import low from 'lowdb'
 import path from 'path'
@@ -22,8 +21,12 @@ export function getSha1(contents: string | Buffer): string {
   return hash.digest('hex')
 }
 
-export async function getCacheDB(projectPath: string, loadState: boolean): Promise<low.LowdbAsync<Record<string, any>>> {
-  const configPath = path.join(os.homedir(), '.sb-babel-cli', `cache-timestamps-${getSha1(projectPath)}`)
+export async function getCacheDB(
+  projectPath: string,
+  loadState: boolean,
+  cacheDirectory: string,
+): Promise<low.LowdbAsync<Record<string, any>>> {
+  const configPath = path.join(cacheDirectory, '.sb-babel-cli', `cache-timestamps-${getSha1(projectPath)}`)
   await makeDir(path.dirname(configPath))
 
   const adapter = new AdapterFileAsync(configPath, {
@@ -87,11 +90,17 @@ export function validateConfig(config: Config, sourceConfig: Config): string[] {
     if (config.watch != null && typeof config.watch !== 'boolean') {
       issues.push('config.watch must be a valid boolean')
     }
-    if (config.ignored != null && typeof config.ignored !== 'string') {
-      issues.push('config.ignored must be a valid string')
+    if (
+      config.ignored != null &&
+      (!Array.isArray(config.ignored) || !config.ignored.every((item) => typeof item === 'string'))
+    ) {
+      issues.push('config.ignored must be a valid array of strings')
     }
-    if (config.ignoredForRestart != null && typeof config.ignoredForRestart !== 'string') {
-      issues.push('config.ignoredForRestart must be a valid string')
+    if (
+      config.ignoredForRestart != null &&
+      (!Array.isArray(config.ignoredForRestart) || !config.ignoredForRestart.every((item) => typeof item === 'string'))
+    ) {
+      issues.push('config.ignoredForRestart must be a valid array of strings')
     }
     if (config.sourceMaps != null && typeof config.sourceMaps !== 'boolean' && config.sourceMaps !== 'inline') {
       issues.push('config.sourceMaps must either be a boolean or "inline"')
