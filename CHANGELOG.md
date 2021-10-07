@@ -1,3 +1,7 @@
+### 5.1.1
+
+- Fix subsequent `--ignored` and `--ignored-for-restart` being ignored - Thanks @skvale
+
 ### 5.1.0
 
 - Add support for `--cache-directory` to specify directories to store the `.sb-babel-cli` directory in - Thanks @skvale
