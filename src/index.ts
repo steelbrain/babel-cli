@@ -63,6 +63,9 @@ async function main(cliConfig: Config): Promise<void> {
   }
 
   function log(...items: string[]) {
+    if (config.silent) {
+      return
+    }
     if (config.execute) {
       console.log(`${chalk.yellow('[sb-babel-cli]')}`, ...items)
     } else {

@@ -17,6 +17,7 @@ export interface Config {
   execute: string
   executeDelay: number
   extensions: string[]
+  silent: boolean
   // READONLY arg:
   loadConfig: boolean
   printConfig: boolean

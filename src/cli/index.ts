@@ -63,6 +63,7 @@ program
   )
   .option('--no-load-config', 'Disables loading of "sb-config-file" from package.json (in --root)')
   .option('--print-config', 'Print the config being used (for debugging only)')
+  .option('--silent', 'Disable log outputs')
   .on('--help', () => {
     console.log('\nArguments after -- will be passed as-are to programs executed through -x')
   })
@@ -113,6 +114,7 @@ const configPartial: Omit<Config, 'specifiedArgs'> = {
   extensions: optionalGet(program, 'extensions', ['.js']),
   loadConfig: optionalGet(program, 'loadConfig', true),
   printConfig: optionalGet(program, 'printConfig', false),
+  silent: optionalGet(program, 'silent', false),
   nodeArgs,
   programArgs: program.args.slice(1),
 }

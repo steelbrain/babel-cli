@@ -41,6 +41,7 @@ Options:
   --extensions <exts>                 Comma separated extensions to process through the CLI (defaults to .js)
   --no-load-config                    Disables loading of "sb-config-file" from package.json (in --root)
   --print-config                      Print the config being used (for debugging only)
+  --silent                            Disable log outputs
   --debug-port <arg>                  Passthrough arg for Node.js runtime for programs executed through -x
   --inspect-port <arg>                Passthrough arg for Node.js runtime for programs executed through -x
   --inspect                           Passthrough arg for Node.js runtime for programs executed through -x
