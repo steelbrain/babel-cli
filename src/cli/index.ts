@@ -30,22 +30,18 @@ program
     'Root directory for compilation; where presets and CLI config is resolved from (defaults to cwd)',
   )
   .option('--cache-directory <directory>', 'Directory to store the cache ".sb-babel-cli" (defaults to homedir)')
-  .option('--ignored <globs>', 'Ignored files and directories that match the given glob', (value) =>
-    value
-      .split(',')
-      .map((item) => item.trim())
-      .filter(Boolean),
+  .option(
+    '--ignored <glob>',
+    'Ignored files and directories that match the given glob (You can specify --ignored <glob> multiple times)',
   )
-  .option('--ignored-for-restart <globs>', 'These files are transpiled, but do not cause restart', (value) =>
-    value
-      .split(',')
-      .map((item) => item.trim())
-      .filter(Boolean),
+  .option(
+    '--ignored-for-restart <glob>',
+    'These files are transpiled, but do not cause restart (You can specify --ignored-for-restart <glob> multiple times)',
   )
   .option('--source-maps [true|false|inline]', 'Generate source maps for transpiled files', (value) =>
     value !== 'inline' ? value === 'true' : 'inline',
   )
-  .option('--reset-cache', 'Retranspile all files ignoring cache')
+  .option('--reset-cache', 'Re-transpile all files ignoring cache')
   .option('--keep-extra-files', 'Do NOT delete extra files in the output directory')
   .option('-o, --output-directory <directory>', 'Output directory to write transpiled files to')
   .option('--output-file-extension <extension>', 'Output file extension (defaults to .js)')
@@ -103,8 +99,8 @@ const configPartial: Omit<Config, 'specifiedArgs'> = {
   cacheDirectory: optionalGet(program, 'cacheDirectory', os.homedir()),
 
   watch: optionalGet(program, 'watch', false),
-  ignored: optionalGet(program, 'ignored', []),
-  ignoredForRestart: optionalGet(program, 'ignoredForRestart', []),
+  ignored: [].concat(optionalGet(program, 'ignored', [])),
+  ignoredForRestart: [].concat(optionalGet(program, 'ignoredForRestart', [])),
   sourceMaps: optionalGet(program, 'sourceMaps', false),
   resetCache: optionalGet(program, 'resetCache', false),
   keepExtraFiles: optionalGet(program, 'keepExtraFiles', false),
