@@ -143,7 +143,10 @@ async function main(cliConfig: Config): Promise<void> {
     async callback(sourceFile, outputFile, stats) {
       const cachedTimestamp = await contentHashCache.get(getSha1(sourceFile)).value()
       const sourceFileContents = await fs.promises.readFile(sourceFile, 'utf8')
-      if (fs.existsSync(outputFile) && cachedTimestamp === getSha1(sourceFileContents)) {
+      const outputFileExists = await fs.promises.access(outputFile, fs.constants.F_OK)
+        .then(() => true)
+        .catch(() => false);
+      if (outputFileExists && cachedTimestamp === getSha1(sourceFileContents)) {
         if (!config.execute) {
           log(path.relative(config.rootDirectory, sourceFile), 'is unchanged')
         }
