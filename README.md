@@ -60,11 +60,12 @@ with the key `sb-babel-cli`. Here are the supported options
 ```typescript
 interface Config {
   outputDirectory: string
+  cacheDirectory: string
 
   outputFileExtension: string
   watch: boolean
-  ignored: string
-  ignoredForRestart: string
+  ignored: string[]
+  ignoredForRestart: string[]
   sourceMaps: boolean | 'inline'
   resetCache: boolean
   keepExtraFiles: boolean
