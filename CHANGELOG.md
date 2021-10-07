@@ -1,3 +1,10 @@
+### 5.1.0
+
+- Add support for `--cache-directory` to specify directories to store the `.sb-babel-cli` directory in - Thanks @skvale
+- Allow specifying `--ignored` and `--ignored-for-restart` multiple times for multiple globs - Thanks @skvale
+- Add support for `--output-file-extension` to output to something other than `.js` (useful for `.cjs` and `.mjs` conversions) - Thanks @skvale
+- Add support for `--silent` to disable log output - Thanks @skvale
+
 ### 5.0.0
 
 - CACHE BREAKING: Use content hash (SHA1) instead of timestamps for cache. This should give you cache persistence in CI environments.
