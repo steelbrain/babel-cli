@@ -4,11 +4,13 @@ export interface Config {
   // READONLY arg:
   sourceDirectory: string
   outputDirectory: string
+  outputFileExtension: string
   rootDirectory: string
+  cacheDirectory: string
 
   watch: boolean
-  ignored: string
-  ignoredForRestart: string
+  ignored: string[]
+  ignoredForRestart: string[]
   sourceMaps: boolean | 'inline'
   resetCache: boolean
   keepExtraFiles: boolean

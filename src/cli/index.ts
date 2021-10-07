@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+import os from 'os'
 import fs from 'fs'
 import path from 'path'
 import program from 'commander'
@@ -28,21 +29,33 @@ program
     '--root <directory>',
     'Root directory for compilation; where presets and CLI config is resolved from (defaults to cwd)',
   )
-  .option('--ignored <glob>', 'Ignored files and directories that match the given glob')
-  .option('--ignored-for-restart <glob>', 'These files are transpiled, but do not cause restart')
+  .option('--cache-directory <directory>', 'Directory to store the cache ".sb-babel-cli" (defaults to homedir)')
+  .option('--ignored <globs>', 'Ignored files and directories that match the given glob', (value) =>
+    value
+      .split(',')
+      .map((item) => item.trim())
+      .filter(Boolean),
+  )
+  .option('--ignored-for-restart <globs>', 'These files are transpiled, but do not cause restart', (value) =>
+    value
+      .split(',')
+      .map((item) => item.trim())
+      .filter(Boolean),
+  )
   .option('--source-maps [true|false|inline]', 'Generate source maps for transpiled files', (value) =>
     value !== 'inline' ? value === 'true' : 'inline',
   )
   .option('--reset-cache', 'Retranspile all files ignoring cache')
   .option('--keep-extra-files', 'Do NOT delete extra files in the output directory')
   .option('-o, --output-directory <directory>', 'Output directory to write transpiled files to')
+  .option('--output-file-extension <extension>', 'Output file extension (defaults to .js)')
   .option('-x, --execute <entryFile>', 'Relative path of file to execute (only supported in watcher mode)')
   .option(
     '--execute-delay <delay>',
     'Delay in ms in between restarts of executed file (defaults to 1000ms)',
     (value) => parseInt(value, 10) || 1000,
   )
-  .option('--extensions <exts>', 'Comma spearated extensions to process through the CLI (defaults to .js)', (value) =>
+  .option('--extensions <exts>', 'Comma separated extensions to process through the CLI (defaults to .js)', (value) =>
     value
       .split(',')
       .map((item) => item.trim())
@@ -86,13 +99,15 @@ const configPartial: Omit<Config, 'specifiedArgs'> = {
   sourceDirectory: program.args[0],
   outputDirectory: optionalGet(program, 'outputDirectory', ''),
   rootDirectory: optionalGet(program, 'root', process.cwd()),
+  cacheDirectory: optionalGet(program, 'cacheDirectory', os.homedir()),
 
   watch: optionalGet(program, 'watch', false),
-  ignored: optionalGet(program, 'ignored', ''),
-  ignoredForRestart: optionalGet(program, 'ignoredForRestart', ''),
+  ignored: optionalGet(program, 'ignored', []),
+  ignoredForRestart: optionalGet(program, 'ignoredForRestart', []),
   sourceMaps: optionalGet(program, 'sourceMaps', false),
   resetCache: optionalGet(program, 'resetCache', false),
   keepExtraFiles: optionalGet(program, 'keepExtraFiles', false),
+  outputFileExtension: optionalGet(program, 'outputFileExtension', '.js'),
   execute: optionalGet(program, 'execute', ''),
   executeDelay: optionalGet(program, 'executeDelay', 250),
   extensions: optionalGet(program, 'extensions', ['.js']),

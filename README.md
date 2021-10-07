@@ -28,15 +28,17 @@ Options:
   -w, --watch                         Watch files for changes
   --root <directory>                  Root directory for compilation; where presets and CLI config is resolved from
                                       (defaults to cwd)
-  --ignored <glob>                    Ignored files and directories that match the given glob
-  --ignored-for-restart <glob>        These files are transpiled, but do not cause restart
+  --cache-directory <directory>       Directory to store the cache ".sb-babel-cli" (defaults to homedir)
+  --ignored <globs>                   Ignored files and directories that match the given anymatch globs
+  --ignored-for-restart <globs>       Files and directories that match the given anymatch globs are transpiled, but do not cause restart
   --source-maps [true|false|inline]   Generate source maps for transpiled files
   --reset-cache                       Retranspile all files ignoring cache
   --keep-extra-files                  Do NOT delete extra files in the output directory
   -o, --output-directory <directory>  Output directory to write transpiled files to
+  --output-file-extension <extension> Output file extension (defaults to .js)
   -x, --execute <entryFile>           Relative path of file to execute (only supported in watcher mode)
   --execute-delay <delay>             Delay in ms in between restarts of executed file (defaults to 1000ms)
-  --extensions <exts>                 Comma spearated extensions to process through the CLI (defaults to .js)
+  --extensions <exts>                 Comma separated extensions to process through the CLI (defaults to .js)
   --no-load-config                    Disables loading of "sb-config-file" from package.json (in --root)
   --print-config                      Print the config being used (for debugging only)
   --debug-port <arg>                  Passthrough arg for Node.js runtime for programs executed through -x
@@ -59,6 +61,7 @@ with the key `sb-babel-cli`. Here are the supported options
 interface Config {
   outputDirectory: string
 
+  outputFileExtension: string
   watch: boolean
   ignored: string
   ignoredForRestart: string
